@@ -1461,7 +1461,98 @@ function isNoChildrenSelection(childrenValue) {
 class Game {
   constructor() {
     this.root = document.getElementById('game-root');
+    this.profileId = null;
+    this.sessionId = null;
+    this.sceneShownAt = null;
+    this.sceneMetersBefore = null;
+    this.currentEndingId = null;
+    this.surveyStartedAt = Date.now();
     this.showTitleScreen();
+  }
+
+  async postJSON(path, payload, opts = {}) {
+    try {
+      const res = await fetch(path, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(payload),
+        keepalive: opts.keepalive === true
+      });
+      if (!res.ok) throw new Error(`POST ${path} failed: ${res.status}`);
+      return await res.json().catch(() => ({}));
+    } catch (err) {
+      console.warn(`Telemetry error for ${path}:`, err.message);
+      return null;
+    }
+  }
+
+  async saveProfileRecord() {
+    if (!this.surveyData) return null;
+    const payload = {
+      survey: this.surveyData,
+      setup: {
+        playerName: this.playerName,
+        partnerName: this.partnerName,
+        partnerCommute: this.partnerCommute,
+        playerJob: this.surveyJobLabel || '',
+        wfhArrangement: this.wfhArrangement || '',
+        buildVersion: GAME_CONFIG.version
+      },
+      surveyDurationMs: Date.now() - (this.surveyStartedAt || Date.now())
+    };
+    const data = await this.postJSON('/api/profile', payload);
+    if (data?.profile_id) this.profileId = data.profile_id;
+    return data;
+  }
+
+  async startSessionRecord() {
+    const payload = {
+      profileId: this.profileId,
+      scenarioType: this.scenarioType,
+      buildVersion: GAME_CONFIG.version,
+      storyState: this.storyState || null
+    };
+    const data = await this.postJSON('/api/session-start', payload);
+    if (data?.session_id) this.sessionId = data.session_id;
+    return data;
+  }
+
+  async logSceneEvent(sceneId, choiceId, responseTimeMs, metersBefore, metersAfter) {
+    if (!this.sessionId) return null;
+    return this.postJSON('/api/scene-event', {
+      sessionId: this.sessionId,
+      scenarioType: this.scenarioType,
+      sceneId,
+      choiceId,
+      responseTimeMs,
+      sceneShownAt: this.sceneShownAt,
+      choiceSubmittedAt: new Date().toISOString(),
+      metersBefore,
+      metersAfter,
+      storyState: this.storyState || null
+    });
+  }
+
+  async completeSessionRecord(ending) {
+    if (!this.sessionId) return null;
+    return this.postJSON('/api/session-end', {
+      sessionId: this.sessionId,
+      endingId: ending?.id || this.currentEndingId || null,
+      endingTitle: ending?.title || null,
+      failed: this.failed,
+      finalMeters: this.meters,
+      storyState: this.storyState || null,
+      choices: this.choices || [],
+      meterHistory: this.meterHistory || []
+    }, { keepalive: true });
+  }
+
+  async savePostSurveyRecord() {
+    if (!this.sessionId || !this.postSurveyData) return null;
+    return this.postJSON('/api/post-survey', {
+      sessionId: this.sessionId,
+      postSurvey: this.postSurveyData
+    }, { keepalive: true });
   }
 
   isNoChildrenProfile() {
@@ -1637,6 +1728,7 @@ class Game {
   }
 
   showSurvey() {
+    this.surveyStartedAt = Date.now();
     const attItem = (id, text) => `
       <p style="font-size:14px;font-weight:500;margin-bottom:8px;">"${text}"</p>
       <div style="display:flex;gap:6px;margin-bottom:6px;">
@@ -1884,6 +1976,7 @@ class Game {
     // Show profile immediately with rule-based title, then upgrade with AI title
     this.showProfile();
     this.generateAvatarTitle(); // runs in background, updates DOM when ready
+    this.saveProfileRecord();
   }
 
   async generateAvatarTitle() {
@@ -2127,7 +2220,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
     `;
   }
   
-  startScenario() {
+  async startScenario() {
     this.playerJob = this.surveyJobLabel || "";
     if (this.scenarioType === 'employer') {
       const pool = EMPLOYEE_NAMES.filter(n => n.toLowerCase() !== (this.partnerName || '').toLowerCase());
@@ -2187,7 +2280,9 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
     this.meterHistory = [];
     this.failed = false;
     this.failMessage = null;
+    this.currentEndingId = null;
 
+    await this.startSessionRecord();
     this.showScene();
   }
 
@@ -2984,14 +3079,14 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
         return {
           ...ending,
           title: "Good Chance You'd Try For Another Baby",
-          desc: "Something shifted this week. Not in a dramatic way — in the practical, exhausting places that usually decide everything. The load felt more shared. {partnerName}'s stress is manageable. Your work is not on fire. For the first time in a while, the question of another child does not sound reckless. It sounds difficult, but possible."
+          desc: "Something shifted this week. Not in a dramatic way — in the practical places that usually decide everything. The load felt more shared. {partnerName}'s stress is manageable. Your work is not on fire. For the first time in a while, trying for another baby does not sound reckless. It still sounds hard, but possible."
         };
       }
       if (path === 'unsure') {
         return {
           ...ending,
-          title: "Good Chance You'd Decide To Try",
-          desc: "You did not force an answer this week. That turned out to matter. {partnerName} no longer feels alone in thinking about having a child, and you no longer feel like work has to swallow every future-facing moment. Nothing is decided yet. But it now feels more like the two of you could actually decide to try."
+          title: "Good Chance You'd Decide To Have A Child",
+          desc: "You did not force an answer this week. That turned out to matter. {partnerName} no longer feels alone in thinking about having a child, and you no longer feel like work has to swallow every future-facing moment. Nothing is decided yet. But it now feels more like the two of you could actually decide whether to have a child."
         };
       }
       if (path === 'expecting') {
@@ -3003,8 +3098,8 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
       }
       return {
         ...ending,
-        title: "Good Chance You'd Start Trying",
-        desc: "This week did not answer everything. It changed the conditions. The small things added up: the pressure you absorbed, the tasks you noticed, the moments you did not let work steal. {partnerName}'s stress is manageable. The relationship feels more solid. For the first time, having a baby sounds less like something she would end up carrying first and more like something you would both decide to try for."
+        title: "Good Chance You'd Try For A Baby",
+        desc: "This week did not answer everything. It changed the conditions. The small things added up: the pressure you absorbed, the tasks you noticed, the moments you did not let work steal. {partnerName}'s stress is manageable. The relationship feels more solid. For the first time, trying for a baby sounds less like something she would end up carrying first and more like something you would both decide to do."
       };
     }
 
@@ -3016,13 +3111,13 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
         return {
           ...ending,
           title: "The Future Already Feels Heavy",
-          desc: "Her stress hit {her_stress}%. The week had moments, but the future never felt held by the present. Work kept intruding. The load kept defaulting. Instead of feeling steadier about what is coming, {partnerName} felt more alone inside it. The problem was not love. It was capacity."
+          desc: "Her stress hit {her_stress}%. The week had moments, but the baby never felt held by the way daily life was working. Work kept intruding. The load kept defaulting. Instead of feeling steadier about what is coming, {partnerName} felt more alone in getting ready for the baby. The problem was not love. It was capacity."
         };
       }
       return {
         ...ending,
-        title: "She Couldn't Picture Carrying It",
-        desc: "Her stress hit {her_stress}%. The week had moments, but home still felt like another place where too much landed on her by default. Not because you never cared. Because you did not create enough reliable space. In that tiredness, the question of growing the family stopped feeling exciting and started feeling expensive."
+        title: "She Couldn't Picture Having A Child Right Now",
+        desc: "Her stress hit {her_stress}%. The week had moments, but home still felt like another place where too much landed on her by default. Not because you never cared. Because you did not create enough reliable space. In that tiredness, having a child stopped feeling exciting and started feeling expensive."
       };
     }
 
@@ -3031,13 +3126,13 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
         return {
           ...ending,
           title: "Another Child Felt Further Away",
-          desc: "Alignment fell to {alignment}%. Nothing exploded this week. But the pattern stayed the same: work first, family after, home left to absorb what was left. That is why the idea of another child did not feel closer by the end of the week. It felt harder to imagine carrying."
+          desc: "Alignment fell to {alignment}%. Nothing exploded this week. But the pattern stayed the same: work first, family after, home left to absorb what was left. That is why trying for another baby did not feel closer by the end of the week. It felt harder to imagine carrying."
         };
       }
       if (path === 'unsure') {
         return {
           ...ending,
-          title: "Low Chance You'd Try Right Now",
+          title: "Low Chance You'd Decide To Have A Child Right Now",
           desc: "Alignment fell to {alignment}%. Nothing exploded this week. But the pattern stayed the same: work first, family after, home left to absorb what was left. That is why having a child still does not feel like something you are working out together."
         };
       }
@@ -3050,8 +3145,8 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
       }
       return {
         ...ending,
-        title: "Low Chance You'd Try Right Now",
-        desc: "Alignment fell to {alignment}%. Nothing exploded this week. But the pattern stayed the same: work first, family after, home left to absorb what was left. That is why having a child did not feel more possible by the end of the week. It still felt like too much would land in the wrong place."
+        title: "Low Chance You'd Try For A Baby Right Now",
+        desc: "Alignment fell to {alignment}%. Nothing exploded this week. But the pattern stayed the same: work first, family after, home left to absorb what was left. That is why trying for a baby did not feel more possible by the end of the week. It still felt like too much would land in the wrong place."
       };
     }
 
@@ -3060,13 +3155,13 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
         return {
           ...ending,
           title: "Maybe, But Not Ready To Try For Another Baby Yet",
-          desc: "The week felt better in places. But the question of another child still carries too much weight to feel easy. Alignment reached {alignment}%. There are some signs this could work, but not enough to feel confident about it yet."
+          desc: "The week felt better in places. But the question of another baby still carries too much weight to feel easy. Alignment reached {alignment}%. There are some signs this could work, but not enough to feel confident about trying yet."
         };
       }
       if (path === 'unsure') {
         return {
           ...ending,
-          title: "Still Not Sure About Trying",
+          title: "Still Not Sure About Having A Child",
           desc: "You did not arrive at certainty this week, and maybe you were never going to. What changed is smaller than that: thinking about having a child feels less one-sided. Alignment reached {alignment}%. It still is not clear, but it feels a bit more like something you are working through together."
         };
       }
@@ -3079,8 +3174,8 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
       }
       return {
         ...ending,
-        title: "Maybe, But Not Ready To Try Yet",
-        desc: "Sunday evening. Things look a bit better than they did at the start of the week, but it still does not feel settled. Alignment reached {alignment}%. That makes having a child seem a bit more possible, but not enough to feel straightforward yet."
+        title: "Maybe, But Not Ready To Try For A Baby Yet",
+        desc: "Sunday evening. Things look a bit better than they did at the start of the week, but it still does not feel settled. Alignment reached {alignment}%. That makes trying for a baby seem a bit more possible, but not enough to feel straightforward yet."
       };
     }
 
@@ -3219,6 +3314,8 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
 
     const scene = await this.personalizeScene(this.getActiveScene(this.currentIndex));
     this.sceneStartTime = Date.now();
+    this.sceneShownAt = new Date().toISOString();
+    this.sceneMetersBefore = { ...this.meters };
 
     // Handle no-choices path (domestic labour bad ending)
     if (scene.noChoices) {
@@ -3302,6 +3399,8 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
       storyState: { ...this.storyState }
     });
     
+    const metersBefore = { ...(this.sceneMetersBefore || this.meters) };
+
     // Apply effects (cap at ±12 per BAL-001)
     const changes = [];
     for (let key in choice.effects) {
@@ -3337,6 +3436,7 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
     
     // Record meter state after this choice
     this.meterHistory.push({ scene: scene.id, choice: choiceId, ...this.meters, timestamp: new Date().toISOString() });
+    this.logSceneEvent(scene.id, choiceId, responseTimeMs, metersBefore, { ...this.meters });
 
     // Check fail conditions
     const failMsg = this.checkFailConditions();
@@ -3387,7 +3487,7 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
     }
   }
   
-  showEnding() {
+  async showEnding() {
     const endings = ENDINGS[this.scenarioType];
     let ending = endings.find(e => e.condition(this.meters)) || endings[endings.length - 1];
     if (this.failed) {
@@ -3399,6 +3499,8 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
     if (this.scenarioType === 'mental_health') {
       ending = this.getMentalEndingOverride(ending);
     }
+    this.currentEndingId = ending.id;
+    this.completeSessionRecord(ending);
 
     const animal = getAvatarAnimal(this.surveyData?.occupation);
     const color  = getAvatarColor(this.surveyData?.industry);
@@ -3580,6 +3682,7 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
       irlWhatDifferent:   document.getElementById('post_irl_different')?.value?.trim() || null,
       surpriseMoment:     document.getElementById('post_surprise')?.value?.trim() || null,
     };
+    this.savePostSurveyRecord();
     this.showData();
   }
 
