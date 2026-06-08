@@ -17,6 +17,7 @@ DATABASE_URL = os.environ.get("DATABASE_URL", "")
 ALLOWED_ORIGIN = os.environ.get("ALLOWED_ORIGIN", "")
 
 app = Flask(__name__, static_folder=str(ROOT), static_url_path="")
+DB_READY = False
 
 
 def db_enabled() -> bool:
@@ -52,6 +53,7 @@ def get_db():
 
 
 def init_db():
+    global DB_READY
     if not db_enabled():
         return
     schema_path = ROOT / "schema.sql"
@@ -60,6 +62,14 @@ def init_db():
         with conn.cursor() as cur:
             cur.execute(schema_sql)
         conn.commit()
+    DB_READY = True
+
+
+def ensure_db_ready():
+    global DB_READY
+    if DB_READY or not db_enabled():
+        return
+    init_db()
 
 
 def call_anthropic(prompt: str, max_tokens: int) -> str:
@@ -95,6 +105,7 @@ def call_anthropic(prompt: str, max_tokens: int) -> str:
 
 
 def insert_returning_id(sql: str, params: tuple):
+    ensure_db_ready()
     with get_db() as conn:
         with conn.cursor() as cur:
             cur.execute(sql, params)
@@ -104,6 +115,7 @@ def insert_returning_id(sql: str, params: tuple):
 
 
 def execute_sql(sql: str, params: tuple):
+    ensure_db_ready()
     with get_db() as conn:
         with conn.cursor() as cur:
             cur.execute(sql, params)
@@ -117,10 +129,17 @@ def index():
 
 @app.get("/api/health")
 def health():
+    db_status = db_enabled()
+    if db_enabled():
+        try:
+            ensure_db_ready()
+            db_status = True
+        except Exception:
+            db_status = False
     return jsonify({
         "ok": True,
         "ai_enabled": ai_enabled(),
-        "db_enabled": db_enabled(),
+        "db_enabled": db_status,
         "build_version": "render"
     })
 
@@ -329,9 +348,6 @@ def static_files(path):
     if target.exists() and target.is_file():
         return send_from_directory(ROOT, path)
     return send_from_directory(ROOT, "index.html")
-
-
-init_db()
 
 
 if __name__ == "__main__":

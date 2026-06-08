@@ -495,18 +495,18 @@ const SCENARIO_DEFS = {
     id: "family_planning",
     title: "Family Planning",
     tagClass: "tag-1",
-    goal: "Can your behaviour at home make a shared future feel possible?",
-    description: "You're both circling the same question about what comes next for your family. What matters is not a single big moment, but whether working from home actually changes what you do at home — or just relocates the office.",
+    goal: "See whether having a child still feels realistic by the end of the week.",
+    description: "You're both trying to work out what comes next for your family. What matters is whether working from home changes what you actually do at home, or just moves the office there.",
     meters: [
       { id: "relationship", name: "Relationship quality", color: "meter-teal", initial: 60 },
       { id: "her_stress", name: "Your partner's strain", color: "meter-coral", initial: 40, inverted: true },
-      { id: "alignment", name: "Shared direction", color: "meter-purple", initial: 50 },
+      { id: "alignment", name: "How much effort came from both of you", color: "meter-purple", initial: 50 },
       { id: "career", name: "Your standing at work", color: "meter-blue", initial: 60 }
     ],
     failConditions: [
       { meter: "her_stress", threshold: 80, message: "Your partner's strain hits 80% — she's too overwhelmed to think about the future right now." },
       { meter: "career", threshold: 30, below: true, message: "Your standing at work drops below 30% — work anxiety is crowding out everything else." },
-      { meter: "alignment", threshold: 25, below: true, message: "Shared direction falls below 25% — you've drifted too far apart for this to feel shared anymore." },
+      { meter: "alignment", threshold: 25, below: true, message: "Shared direction falls below 25% — it no longer feels like the two of you are moving toward a child together." },
       { meter: "relationship", threshold: 25, below: true, message: "Relationship quality falls below 25% — the emotional distance between you is too wide." }
     ],
     winCondition: { allOf: [
@@ -514,14 +514,14 @@ const SCENARIO_DEFS = {
       { meter: "relationship", threshold: 50 },
       { meter: "career", threshold: 35, below: false },
       { meter: "her_stress", threshold: 70, below: false, inverted: true }
-    ], message: "The conditions are right — alignment is strong, the relationship is solid, and the pressure has eased enough. Being home created the opportunity. You used it: being present rather than just available, taking on real load, protecting time together, and making care visible rather than hidden. That is what made the future feel more possible." }
+    ], message: "The conditions are there — shared direction is strong, the relationship is solid, and the pressure has eased enough. Being home helped because you actually used it for home." }
   },
   
   mental_health: {
     id: "mental_health",
     title: "Mental Health",
     tagClass: "tag-2",
-    goal: "Keep all three people — you, your partner, and your child — above the breaking point",
+    goal: "Get the work done without burning yourself or your family out.",
     description: "⚠️ This scenario has an interconnection mechanic: when your wellbeing drops, your partner's drops too. When hers drops, your child notices. Burnout is contagious. The goal is sustainable balance — not perfect, just sustainable.",
     meters: [
       // Research baseline: working fathers' wellbeing ~average; working mothers' slightly lower; dual-earner family time below average
@@ -543,14 +543,14 @@ const SCENARIO_DEFS = {
     id: "domestic_labour",
     title: "Domestic Labour",
     tagClass: "tag-3",
-    goal: "Get through the week without letting home and work harden into the same argument again",
+    goal: "Get through the week without home tasks and planning sliding mostly back onto her.",
     description: "You are working from home more. That does not make the house simpler.",
     meters: [
       // Starting at research-based values; see Chung et al. for WFH domestic labour distributions
-      { id: "his_perception", name: "Your perception of split", color: "meter-purple", initial: 60 },
-      { id: "her_perception", name: "Her perception of split", color: "meter-coral", initial: 30 },
-      { id: "actual_split", name: "Actual task split", color: "meter-teal", initial: 33 },
-      { id: "mental_load", name: "Your share of mental load", color: "meter-amber", initial: 25 }
+      { id: "his_perception", name: "Your view of your share", color: "meter-purple", initial: 60 },
+      { id: "her_perception", name: "Your partner's view of your share", color: "meter-coral", initial: 30 },
+      { id: "actual_split", name: "What you actually took on", color: "meter-teal", initial: 33 },
+      { id: "mental_load", name: "Your share of planning and remembering", color: "meter-amber", initial: 25 }
     ],
     failConditions: [
       { gap: ["his_perception", "her_perception"], threshold: 50, message: "The perception gap exceeds 50 points — you think you're doing far more than she thinks. Resentment has been building for a while." },
@@ -564,12 +564,12 @@ const SCENARIO_DEFS = {
     id: "employer",
     title: "Retaining Talent",
     tagClass: "tag-4",
-    goal: "Keep your best performer — without breaking the team or your own standing",
-    description: "You play as the manager. Your best team member wants more flexibility for childcare. The evidence says it works. The institution isn't sure. You're caught between data and culture — and both have consequences.",
+    goal: "Keep your best employee while keeping the team working well.",
+    description: "You play as the manager. A strong team member wants more flexibility for childcare. The work can still get done. The harder part is what everyone reads into that yes.",
     meters: [
-      { id: "retention", name: "Employee likelihood to stay", color: "meter-teal", initial: 60 },
-      { id: "team_perception", name: "Team trust in fairness", color: "meter-purple", initial: 70 },
-      { id: "productivity", name: "Team productivity", color: "meter-amber", initial: 65 },
+      { id: "retention", name: "Whether they are likely to stay", color: "meter-teal", initial: 60 },
+      { id: "team_perception", name: "How fair it looks to the team", color: "meter-purple", initial: 70 },
+      { id: "productivity", name: "Whether the work is holding up", color: "meter-amber", initial: 65 },
       { id: "culture_signal", name: "Is flexibility normal here?", color: "meter-blue", initial: 50 }
     ],
     failConditions: [
@@ -650,7 +650,7 @@ const SCENARIOS = {
       day: "Thursday",
       time: "10:15pm",
       sceneText: "Thursday night. The house is finally quiet and you finally have time alone together. {partnerName} comes closer, clearly in the mood. Just then, your phone lights up with a work message from your manager.",
-      context: "It is late. The message is there. So is the moment you were already in.",
+      context: "It is late. The message may not need an answer tonight. You still have to decide what gets your attention first.",
       choices: [
         {
           id: "A",
@@ -1243,7 +1243,7 @@ const FAMILY_PLANNING_BRANCH = {
     day: "Thursday",
     time: "10:15pm",
     sceneText: "Thursday night. The house is finally quiet. You finally have time alone together. {partnerName} comes closer, clearly in the mood. Then your phone lights up with a work message.",
-    context: "It is late. The message is there. So is the moment you were already in.",
+    context: "It is late. The message may not need an answer tonight. You still have to decide what gets your attention first.",
     choices: [
       { id: "A", main: "\"Give me a second — let me check this.\"" , effects: { relationship: -20, her_stress: +12, alignment: -12, career: +5 }, signal: "Her face changes before she looks away. By the time you put the phone down, she is not in the mood anymore.", accumulation: "Being home did not matter much if work could still claim you first.", storySignal: { connection: 0, avoidance: 1, workIntrusion: 2, involvement: 0, reliability: -1, repair: 0 } },
       { id: "B", main: "Put the phone away and tell her work can wait, but she can't." , effects: { relationship: +15, her_stress: -8, alignment: +12, career: -4 }, signal: "She notices you put the phone down and leave it there. The moment does not get interrupted this time, and the two of you end up having a good night together.", accumulation: "You could not fix the whole week. But you did not let work take this too.", storySignal: { connection: 2, avoidance: 0, workIntrusion: 0, involvement: 0, reliability: 1, repair: 1 } },
@@ -1256,7 +1256,7 @@ const FAMILY_PLANNING_BRANCH = {
     day: "Thursday",
     time: "10:15pm",
     sceneText: "Thursday night. The house is finally quiet. You finally have time alone together. {partnerName} comes closer, clearly in the mood. Then your phone lights up with a work message.",
-    context: "It is late. The message is there. So is the moment you were already in.",
+    context: "It is late. The message may not need an answer tonight. You still have to decide what gets your attention first.",
     choices: [
       { id: "A", main: "\"Give me a second — let me check this.\"" , effects: { relationship: -20, her_stress: +12, alignment: -12, career: +5 }, signal: "Her face changes before she looks away. By the time you put the phone down, she is not in the mood anymore.", accumulation: "It only takes one moment like this for work to get back into it.", storySignal: { connection: 0, avoidance: 1, workIntrusion: 2, involvement: 0, reliability: -1, repair: 0 } },
       { id: "B", main: "Put the phone away and tell her work can wait, but she can't." , effects: { relationship: +15, her_stress: -8, alignment: +12, career: -4 }, signal: "She notices you put the phone down and leave it there. The moment does not get interrupted this time, and the two of you end up having a good night together.", accumulation: "What changed was not the phone. It was that you chose home while you were already in it.", storySignal: { connection: 2, avoidance: 0, workIntrusion: 0, involvement: 0, reliability: 1, repair: 1 } },
@@ -1318,13 +1318,13 @@ const ENDINGS = {
       desc: "Your standing at work dropped to {career}%. Work felt more immediate every time the week offered you a family window — the appointment, the evening load, the quiet moment together, the Friday lunch break that could have gone either way. It wasn't one dramatic decision. It was a pattern. By Friday, work still had first claim on you.",
       insight: "Flexibility stigma research shows that fathers who prioritise family risk career penalties — real or perceived. That anxiety crowds out everything else." },
     { id: "fail_drift", condition: (m) => m.alignment <= 25, style: "ending-danger", title: "Two People, One House",
-      desc: "Alignment fell to {alignment}%. You've basically been living side by side in the same house — polite, functional, busy. Nothing exploded this week. But each small opening closed the same way: work first, family after, home as the place left to absorb it. Nothing went badly wrong. Nothing really felt shared either.",
+      desc: "Shared direction fell to {alignment}%. You got through the week, but not together. Each small opening closed the same way: work first, family after, home left to absorb what was left. Nothing exploded. It just did not feel shared.",
       insight: "Work–family conflict research shows that couples who don't actively maintain alignment drift apart without realising it — until the big decisions feel impossible." },
     { id: "fail_relationship", condition: (m) => m.relationship <= 25, style: "ending-danger", title: "The Distance Is Showing",
       desc: "Relationship quality hit {relationship}%. You're not fighting. You're not cold. You're just... formal. The small repairs that didn't happen — showing up there, staying present here, not letting work take one more room — accumulated into distance. Bigger decisions need trust. Right now, trust is in short supply.",
       insight: "Daily micro-moments of support and responsiveness are what maintain relationship quality — and make space for the bigger decisions." },
     { id: "progress", condition: () => true, style: "ending-neutral", title: "Better, But Still Unclear",
-      desc: "By the end of the week, things looked a bit better than they did at the start, but not settled. Alignment reached {alignment}%. That is enough to suggest this might work, but not enough to feel confident about it yet.",
+      desc: "By the end of the week, things looked a bit better than they did at the start, but not settled. Shared direction reached {alignment}%. That is enough to suggest this might work, but not enough to feel confident about it yet.",
       insight: "Change is incremental. Researchers call this 'gradual gender transformation' — slow, uneven, but real when it accumulates." }
   ],
   mental_health: [
@@ -1357,22 +1357,22 @@ const ENDINGS = {
   domestic_labour: [
     { id: "win",
       condition: (m) => m.actual_split >= 50 && m.her_perception >= 45,
-      style: "ending-success", title: "She Noticed — And It's Real",
+      style: "ending-success", title: "You Actually Took Weight Off Her This Week",
       desc: "Actual split: {actual_split}%. Her perception of your contribution: {her_perception}%. The kitchen was clean before she asked. The laundry was done before she mentioned it. She noticed — not with fanfare, but with the particular relief of someone who's been carrying a weight and felt it lighten. It's not 50/50 yet. But for the first time, it feels like it might get there.",
       insight: "Research shows that it's not just the physical tasks that matter — it's whether women feel their partner is noticing and acting without being asked. That shift in mental load carries as much weight as the tasks themselves." },
     { id: "fail_gap",
       condition: (m) => (m.his_perception - m.her_perception) >= 50,
-      style: "ending-danger", title: "The Gap Is Too Wide",
+      style: "ending-danger", title: "You Thought It Was More Shared Than It Was",
       desc: "Your perception of the split: {his_perception}%. Her perception of your contribution: {her_perception}%. A gap of more than 50 points. You genuinely believe you're doing close to half. She genuinely experiences you doing far less. Both of you are right about your own experience. That's what makes this so difficult — and so corrosive. Resentment doesn't need someone to be lying.",
       insight: "The 'chore gap' in UK dual-earner households averages 65/35 even when fathers work from home — but fathers systematically overestimate their contribution by 15–20 percentage points." },
     { id: "fail_stops",
       condition: (m) => m.her_perception <= 20,
-      style: "ending-danger", title: "She Stopped Asking",
+      style: "ending-danger", title: "Most Of The Week Still Landed On Her",
       desc: "Her perception of your contribution: {her_perception}%. She isn't angry anymore. Anger requires hope that something will change. She's past that. She just does the things that need doing, in the order they need doing, without asking or expecting. The household runs on her invisible labour. You're living in it. You just can't see it.",
       insight: "Researchers call this 'silent adjustment' — when women stop negotiating the domestic split and simply absorb the work. It's often mistaken for contentment. It's not." },
     { id: "progress",
       condition: () => true,
-      style: "ending-neutral", title: "Shifted, But Not There Yet",
+      style: "ending-neutral", title: "Some Of The Load Shifted, But Not Enough",
       desc: "Actual split: {actual_split}%. Her perception: {her_perception}%. Things moved this week. She noticed the bins. She noticed the kitchen. The perception gap is {his_perception}% vs {her_perception}% — still wide, but narrower than it was. Change at this level is slow and uneven. The question is whether this week was a sample of what's possible, or just a better-than-usual week.",
       insight: "Studies on domestic labour transitions show that genuine redistribution takes 6–18 months of consistent change before it registers as a shift in partners' perceptions — not a bad week or a good one." }
   ],
@@ -1566,10 +1566,22 @@ class Game {
   getAdjustedScenarioDef(scenarioId) {
     const def = SCENARIO_DEFS[scenarioId];
     if (!def) return def;
+    if (scenarioId === 'family_planning') {
+      const hasChildren = this.hasCurrentChildrenProfile();
+      const familyGoal = this.surveyData?.children === 'expecting'
+        ? "Get to the end of the week with the baby feeling like something you are both getting ready for."
+        : hasChildren
+          ? "See whether having another child still feels realistic by the end of the week."
+          : "See whether having a child still feels realistic by the end of the week.";
+      return {
+        ...def,
+        goal: familyGoal
+      };
+    }
     if (scenarioId === 'mental_health' && this.isNoChildrenProfile()) {
       return {
         ...def,
-        goal: "Keep both of you — and the household around you — above the breaking point",
+        goal: "Get the work done without burning yourself or your relationship out.",
         description: "⚠️ This scenario has an interconnection mechanic: when your wellbeing drops, your partner's drops too. When both of you are running on empty, the whole household atmosphere changes. The goal is sustainable balance — not perfect, just sustainable.",
         meters: def.meters.map(m => m.id === 'child_wellbeing'
           ? { ...m, name: "Household atmosphere" }
@@ -1825,7 +1837,7 @@ class Game {
 
             <div class="card" id="player-work-section" style="margin-bottom:12px;transition:opacity 0.3s;">
               <h3 style="margin-bottom:14px;">⚔️ Character Class</h3>
-              <p style="font-size:12px;color:#888;margin-bottom:14px;font-style:italic;">Your class shapes which dilemmas feel most familiar.</p>
+              <p style="font-size:12px;color:#888;margin-bottom:14px;font-style:italic;">These are broad job groups, not exact titles. Pick the one that feels closest.</p>
 
               <label class="label">Industry / Sector</label>
               <select id="surv-industry" onchange="game.updateAvatar()">
@@ -1845,15 +1857,15 @@ class Game {
               <label class="label">Occupation type</label>
               <select id="surv-occ" onchange="game.updateAvatar()">
                 <option value="">Select...</option>
-                <option value="1">Managers and senior officials</option>
+                <option value="1">Managers and senior officials (department head, senior manager, director)</option>
                 <option value="2">Professional occupations (teacher, doctor, engineer, lawyer…)</option>
-                <option value="3">Associate professional / technical</option>
-                <option value="4">Administrative and clerical</option>
-                <option value="5">Skilled trades</option>
-                <option value="6">Personal service occupations</option>
-                <option value="7">Sales and customer service</option>
-                <option value="8">Process, plant and machine operatives</option>
-                <option value="9">Elementary occupations</option>
+                <option value="3">Associate professional / technical (technician, analyst, designer, teaching assistant)</option>
+                <option value="4">Administrative and clerical (administrator, secretary, office support)</option>
+                <option value="5">Skilled trades (electrician, plumber, carpenter, mechanic)</option>
+                <option value="6">Personal service occupations (care worker, nursery worker, hairdresser)</option>
+                <option value="7">Sales and customer service (retail assistant, receptionist, call-centre worker)</option>
+                <option value="8">Process, plant and machine operatives (driver, machine operator, assembler)</option>
+                <option value="9">Elementary occupations (cleaner, labourer, kitchen assistant, delivery worker)</option>
               </select>
 
               <label class="label">Working arrangement (your WFH days per week)</label>
@@ -1870,8 +1882,8 @@ class Game {
             </div>
 
             <div class="card">
-              <h3 style="margin-bottom:6px;">🧠 Character Beliefs</h3>
-              <p style="font-size:12px;color:#888;margin-bottom:16px;font-style:italic;">What does your character believe about work and family? Rate 1 (strongly disagree) → 5 (strongly agree)</p>
+              <h3 style="margin-bottom:6px;">🧠 Work and Family Context</h3>
+              <p style="font-size:12px;color:#888;margin-bottom:16px;font-style:italic;">These cover both personal views and the kind of workplace your character is in. Rate 1 (strongly disagree) → 5 (strongly agree)</p>
 
               ${attItem('att_father', "A father should be as involved in childcare as the mother")}
               ${attItem('att_stigma', "In my organisation, workers who work from home are seen as less motivated or committed than those who work at the premises")}
@@ -2071,7 +2083,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
           </div>
 
           ${beliefs.length ? `
-            <p class="label">Belief traits</p>
+            <p class="label">Work and family cues</p>
             <div style="margin-bottom:20px;">${beliefs.map(b => `<span class="char-trait-tag active">${b}</span>`).join('')}</div>
           ` : ''}
 
@@ -2095,8 +2107,8 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
       const cardDef = this.getAdjustedScenarioDef(s.id);
       const isFatherScenario = ['family_planning', 'mental_health', 'domestic_labour'].includes(s.id);
       const perspectiveTag = isFatherScenario
-        ? `<p style="font-size:11px;color:#856404;background:#fffbeb;padding:4px 8px;border-radius:6px;margin-top:6px;">👤 Working father, dual-earner heterosexual frame</p>`
-        : '';
+        ? `<p style="font-size:11px;color:#856404;background:#fffbeb;padding:4px 8px;border-radius:6px;margin-top:6px;">👤 You play as a working father</p>`
+        : `<p style="font-size:11px;color:#4A90D9;background:#eef6ff;padding:4px 8px;border-radius:6px;margin-top:6px;">👤 You play as a manager</p>`;
       return `
         <div class="scenario-card" onclick="game.selectScenario('${s.id}')">
           <span class="scenario-tag ${cardDef.tagClass}">Scenario ${i + 1}</span>
@@ -2111,7 +2123,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
         <div class="card">
           <button onclick="game.showProfile()" style="background:none;border:none;color:#888;font-size:13px;cursor:pointer;margin-bottom:10px;">← Back to profile</button>
           <h2>⚔️ Choose your quest</h2>
-          <p class="subtitle">Each scenario has different goals, mechanics, and win/fail conditions.</p>
+          <p class="subtitle">Each scenario has 4 scenes. Pick one, make your choices, and watch the meters move.</p>
           <p style="font-size:13px;color:#555;background:#f0f7ff;padding:10px 14px;border-radius:8px;margin-bottom:16px;border-left:3px solid #007AFF;">The first three scenarios are currently designed around a working father's experience in a heterosexual relationship, because the game is based on research evidence from those households. Future versions may expand to other family types as more evidence becomes available. The Employer scenario is more neutral.</p>
           <div class="scenario-grid">${cards}</div>
         </div>
@@ -2128,17 +2140,53 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
   showGoalIntro() {
     const noChildren = this.isNoChildrenProfile();
     const def = this.scenarioDef;
+    const scenarioGoalHelp = {
+      family_planning: "This goal depends on more than one thing at once. Work needs to feel stable enough, the relationship needs to feel steady enough, your partner's stress cannot keep climbing, and the effort cannot keep falling mostly on one person.",
+      mental_health: noChildren
+        ? "This week is not only about your workload. It is also about whether the strain spills into your relationship and the whole atmosphere at home."
+        : "This week is not only about your workload. It is also about whether the strain spills into your partner, your child, and the whole mood at home.",
+      domestic_labour: "This week is not only about doing a few visible tasks. It is also about whether you take on real responsibility, whether she feels that shift, and whether work keeps pulling you back out of the house.",
+      employer: "Keeping a good employee is not enough on its own. The arrangement also has to hold up in practice, feel fair enough to the team, and avoid becoming something fragile or one-off."
+    };
+    const meterHelp = {
+      family_planning: {
+        relationship: "A child can feel more realistic when the relationship feels steady.",
+        her_stress: "If too much is landing on her, having a child may feel too hard right now.",
+        alignment: "Having a child can feel more realistic when the effort, planning, and pressure do not fall mostly on one person.",
+        career: "If work feels shaky, having a child may feel too risky."
+      },
+      mental_health: {
+        his_wellbeing: "If you are running on empty, it spills into everything else.",
+        her_wellbeing: "If too much strain lands on her, the whole week gets harder.",
+        child_wellbeing: noChildren
+          ? "Stress changes how the whole home feels, even when nobody says much."
+          : "Children notice the mood of a house long before adults talk about it.",
+        family_time: "A week can function on paper and still leave no real time for each other."
+      },
+      domestic_labour: {
+        his_perception: "How much you think you have contributed this week.",
+        her_perception: "How much she feels you have contributed this week.",
+        actual_split: "The tasks you really absorbed, not just the ones you started or helped with.",
+        mental_load: "How much of the noticing, organising, and keeping track came from you."
+      },
+      employer: {
+        retention: "If the arrangement feels too hard or too fragile, they may leave.",
+        team_perception: "If other people read it as special treatment, trust can drop.",
+        productivity: "The arrangement has to work in practice, not just in principle.",
+        culture_signal: "If flexibility still feels unusual, every case becomes harder to defend."
+      }
+    };
     const meterDescriptions = def.meters.map(m => {
       const dotColor = m.color.replace('meter-purple','#6B4C9A').replace('meter-coral','#E57373')
                                .replace('meter-amber','#DAA520').replace('meter-teal','#00A896')
                                .replace('meter-blue','#4A90D9');
-      const startVal = m.initial;
-      const startColor = startVal >= 50 ? '#34C759' : startVal >= 30 ? '#FF9500' : '#FF3B30';
       return `
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-          <div style="width:10px;height:10px;border-radius:50%;background:${dotColor};flex-shrink:0;"></div>
-          <p style="font-size:14px;color:#444;flex:1;"><strong>${m.name}</strong></p>
-          <span style="font-size:12px;font-weight:600;color:${startColor};background:#f8f8f8;padding:2px 8px;border-radius:10px;">starts ${startVal}%</span>
+        <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;">
+          <div style="width:10px;height:10px;border-radius:50%;background:${dotColor};flex-shrink:0;margin-top:5px;"></div>
+          <div style="flex:1;">
+            <p style="font-size:14px;color:#444;flex:1;margin-bottom:3px;"><strong>${m.name}</strong></p>
+            <p style="font-size:12px;color:#777;line-height:1.45;">${meterHelp[def.id]?.[m.id] || ''}</p>
+          </div>
         </div>`;
     }).join('');
 
@@ -2147,7 +2195,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
     const perceptionGapNote = def.mechanic === 'perception_gap' ? `
       <div style="background:#fff0f0;border-left:4px solid #E57373;padding:12px 14px;border-radius:0 8px 8px 0;margin-bottom:16px;">
         <p style="font-size:12px;color:#c62828;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;">⚡ Two views, one household</p>
-        <p style="font-size:13px;color:#555;line-height:1.5;"><strong>Your perception:</strong> how much you think you contribute. <strong>Her perception:</strong> how much she thinks you contribute. Both start different — and both can be genuinely true from where each person stands. <strong>Mental Load</strong> tracks how much you are noticing what needs doing and keeping track — not just doing it when asked.</p>
+        <p style="font-size:13px;color:#555;line-height:1.5;"><strong>Your view of your share:</strong> how much you think you contributed. <strong>Your partner's view of your share:</strong> how much she feels you contributed. Both can differ without either of you feeling dishonest. <strong>Planning and remembering</strong> tracks how much of the noticing, organising, and keeping track came from you.</p>
       </div>` : '';
 
     const interconnectionNote = def.mechanic === 'interconnection' ? `
@@ -2164,6 +2212,12 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
         <p style="font-size:13px;color:#555;line-height:1.5;">This meter reflects the pressure your partner is under. If she is employed, that often means work-family conflict. If she is not, it reflects overload, planning burden, and the feeling that too much is still landing with her.</p>
       </div>` : '';
 
+    const employerCultureNote = def.id === 'employer' ? `
+      <div style="background:#eef6ff;border-left:4px solid #4A90D9;padding:12px 14px;border-radius:0 8px 8px 0;margin-bottom:16px;">
+        <p style="font-size:12px;color:#4A90D9;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;">⚡ What "Is flexibility normal here?" means</p>
+        <p style="font-size:13px;color:#555;line-height:1.5;">This tracks whether flexibility feels like a normal part of team life or a special case that has to be defended every time.</p>
+      </div>` : '';
+
     this.root.innerHTML = `
       <div class="screen active">
         <div class="scenario-info">
@@ -2174,8 +2228,9 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
         <div class="card">
           <h3>Your goal</h3>
           <p style="font-size:15px;font-weight:500;color:#333;margin-bottom:16px;">${def.goal}</p>
+          <p style="font-size:13px;color:#666;line-height:1.5;margin-bottom:16px;">${scenarioGoalHelp[def.id] || ''}</p>
 
-          ${interconnectionNote}${perceptionGapNote}${familyPlanningNote}
+          ${interconnectionNote}${perceptionGapNote}${familyPlanningNote}${employerCultureNote}
 
           <p class="label">What you're managing</p>
           <div style="margin-bottom:16px;">${meterDescriptions}</div>
@@ -2332,6 +2387,16 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
         .replace(/Even if (?:she|they|he) left now, it would take time\./gi, cantLeave);
     }
 
+    if (isPartnerHome) {
+      sceneText = sceneText
+        .replace(/comes downstairs after closing (?:her|their|his) laptop/gi, 'comes in from the other room')
+        .replace(/after closing (?:her|their|his) laptop/gi, 'after a long day at home')
+        .replace(/\b(?:she|he|they) (?:has|have) been working since early this morning and is visibly tired\b/gi, '{partnerName} already looks tired')
+        .replace(/\b(?:she|he|they) (?:has|have) been working since early this morning\b/gi, '{partnerName} already looks tired');
+      context = context
+        .replace(/\b(?:she|he|they) (?:has|have) been working since early this morning\b/gi, '{partnerName} has already had a long day at home');
+    }
+
     return { ...scene, sceneText, context };
   }
 
@@ -2471,8 +2536,8 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
         id: "mh_3_monitoring",
         day: "Thursday",
         time: "4:45pm",
-        sceneText: "Thursday, 4:45pm. Your manager says the team will be using laptop activity tracking next week to support productivity. Your child is already waiting because you said you would take them out before dinner. {partnerName} is by the door with the bag.",
-        context: "The day is basically done. The new tracking is not aimed at you personally, but it is hard not to read it that way.",
+        sceneText: "Thursday, 4:45pm. Your manager says the team will start using laptop activity tracking next week. Your child is already waiting because you said you would take them out before dinner. {partnerName} is by the door with the bag.",
+        context: "It does not start tonight. It still changes how this evening feels.",
         choices: [
           {
             id: "A",
@@ -2533,8 +2598,8 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
       id: "mh_3_monitoring_no_child",
       day: "Thursday",
       time: "4:45pm",
-      sceneText: "Thursday, 4:45pm. Your manager says the team will be using laptop activity tracking next week to support productivity. {partnerName} is by the door because you said you would go for a walk before dinner.",
-      context: "The day is basically done. The new tracking is not aimed at you personally, but it is hard not to read it that way.",
+      sceneText: "Thursday, 4:45pm. Your manager says the team will start using laptop activity tracking next week. {partnerName} is by the door because you said you would go for a walk before dinner.",
+      context: "It does not start tonight. It still changes how this evening feels.",
       choices: [
         {
           id: "A",
@@ -2707,10 +2772,12 @@ ADAPT (make changes like these):
    • If the profile is expecting, antenatal appointments, due dates, and preparation scenes make sense; "are we ready to try?" does not
    • If a future trying_now path is used, fertility clinic scenes can make sense — but treat them as shared reproductive labour, not just her private health issue
    • Do NOT use markdown emphasis or asterisks like *her* or **important** in the scene text. Build emphasis into the sentence naturally
-   • If she is not employed, do NOT give her a work laptop, work calls, or office-like details unless the scene has already explicitly established a reason
+   • If she is not employed, do NOT give her a work laptop, work calls, office-like details, or a line about having worked all day
    • If she is not employed, do NOT mention a commute, office arrival, or work deadlines for her
    • Prefer "working from home" over over-specific phrases like "at the kitchen table" unless that domestic detail adds something important and plausible
    • The grey context box should stay inside the story. Keep it plain, helpful, and easy to read. State the facts of the moment, but do not explain the game mechanic or tell the player what makes the choice hard
+   • The grey context box should describe the immediate situation only. Do NOT summarise the whole week, tell the player what their partner has noticed, or explain what the scene "really means"
+   • Avoid lines like "this week has felt different", "she has noticed", "it has been building", or "the real question is". That sounds manipulative
 3. INDUSTRY FLAVOUR — make work references real:
    • If the scene mentions work, the work part should sound like his sector or occupation, not generic office filler
    • Replace vague phrases like "work task", "manager ping", "client thing", "last task", or "deadline" with one believable sector-specific equivalent whenever the work detail is visible in the scene
@@ -2764,12 +2831,13 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
       console.log('AI raw:', rawText);
       const parsed = parseClaudeJSON(rawText);
       // guide uses "scene" key; also accept "sceneText" for backwards compat
-      const personalized = {
+      const personalized = this.preAdaptScene({
         ...scene,
         sceneText: parsed.scene || parsed.sceneText || scene.sceneText,
         context:   parsed.context || scene.context,
         _aiAdapted: true
-      };
+      });
+      personalized._aiAdapted = true;
       this.sceneCache[cacheKey] = personalized;
       return personalized;
     } catch (e) {
@@ -3126,27 +3194,27 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
         return {
           ...ending,
           title: "Another Child Felt Further Away",
-          desc: "Alignment fell to {alignment}%. Nothing exploded this week. But the pattern stayed the same: work first, family after, home left to absorb what was left. That is why trying for another baby did not feel closer by the end of the week. It felt harder to imagine carrying."
+        desc: "Shared direction fell to {alignment}%. Nothing exploded this week. But the pattern stayed the same: work first, family after, home left to absorb what was left. That is why trying for another baby did not feel closer by the end of the week."
         };
       }
       if (path === 'unsure') {
         return {
           ...ending,
           title: "Low Chance You'd Decide To Have A Child Right Now",
-          desc: "Alignment fell to {alignment}%. Nothing exploded this week. But the pattern stayed the same: work first, family after, home left to absorb what was left. That is why having a child still does not feel like something you are working out together."
+        desc: "Shared direction fell to {alignment}%. Nothing exploded this week. But the pattern stayed the same: work first, family after, home left to absorb what was left. That is why having a child still does not feel like something you are working out together."
         };
       }
       if (path === 'expecting') {
         return {
           ...ending,
           title: "Low Chance You'll Be Ready Together",
-          desc: "Alignment fell to {alignment}%. Nothing exploded this week. But the pattern stayed the same: work first, family after, home left to absorb what was left. That is why the baby still feels like something approaching the household more than something the two of you are preparing for together."
+        desc: "Shared direction fell to {alignment}%. Nothing exploded this week. But the pattern stayed the same: work first, family after, home left to absorb what was left. That is why the baby still feels like something landing on the household more than something the two of you are preparing for together."
         };
       }
       return {
         ...ending,
         title: "Low Chance You'd Try For A Baby Right Now",
-        desc: "Alignment fell to {alignment}%. Nothing exploded this week. But the pattern stayed the same: work first, family after, home left to absorb what was left. That is why trying for a baby did not feel more possible by the end of the week. It still felt like too much would land in the wrong place."
+        desc: "Shared direction fell to {alignment}%. Nothing exploded this week. But the pattern stayed the same: work first, family after, home left to absorb what was left. That is why trying for a baby did not feel more possible by the end of the week."
       };
     }
 
@@ -3155,27 +3223,27 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
         return {
           ...ending,
           title: "Maybe, But Not Ready To Try For Another Baby Yet",
-          desc: "The week felt better in places. But the question of another baby still carries too much weight to feel easy. Alignment reached {alignment}%. There are some signs this could work, but not enough to feel confident about trying yet."
+          desc: "The week felt better in places. But another baby still does not feel straightforward. Shared direction reached {alignment}%. There are some signs this could work, but not enough to feel confident about trying yet."
         };
       }
       if (path === 'unsure') {
         return {
           ...ending,
           title: "Still Not Sure About Having A Child",
-          desc: "You did not arrive at certainty this week, and maybe you were never going to. What changed is smaller than that: thinking about having a child feels less one-sided. Alignment reached {alignment}%. It still is not clear, but it feels a bit more like something you are working through together."
+          desc: "You did not arrive at certainty this week, and maybe you were never going to. Thinking about having a child feels less one-sided now. Shared direction reached {alignment}%. It still is not clear, but it feels a bit more like something you are working through together."
         };
       }
       if (path === 'expecting') {
         return {
           ...ending,
           title: "A Bit More Ready For The Baby, Not Fully Ready",
-          desc: "The next chapter is already coming, whether you feel fully ready or not. This week helped in places, but not enough to make the household feel settled. Alignment reached {alignment}%. Some moments felt shared. Others still defaulted. It is progress, just not enough to feel fully ready yet."
+          desc: "The baby is coming whether you feel fully ready or not. This week helped in places, but not enough to make the household feel settled. Shared direction reached {alignment}%. Some moments felt shared. Others still defaulted. It is progress, just not enough to feel fully ready yet."
         };
       }
       return {
         ...ending,
         title: "Maybe, But Not Ready To Try For A Baby Yet",
-        desc: "Sunday evening. Things look a bit better than they did at the start of the week, but it still does not feel settled. Alignment reached {alignment}%. That makes trying for a baby seem a bit more possible, but not enough to feel straightforward yet."
+        desc: "Sunday evening. Things look a bit better than they did at the start of the week, but it still does not feel settled. Shared direction reached {alignment}%. That makes trying for a baby seem a bit more possible, but not enough to feel straightforward yet."
       };
     }
 
@@ -3215,7 +3283,7 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
     if (ending.id === 'win') {
       return {
         ...ending,
-        desc: "Sunday evening. You're both in the same room — not performing a version of home life, just in it. Your wellbeing is at {his_wellbeing}%. {partnerName}'s is at {her_wellbeing}%. The atmosphere at home is at {child_wellbeing}%. Not perfect. But no one is burning out, breaking down, or quietly shutting down. That's what sustainable looks like."
+        desc: "Sunday evening. You're both in the same room and neither of you is trying to squeeze one more thing out of the night. Your wellbeing is at {his_wellbeing}%. {partnerName}'s is at {her_wellbeing}%. The atmosphere at home is at {child_wellbeing}%. Not perfect. But no one is at breaking point. That is what sustainable looks like."
       };
     }
     if (ending.id === 'fail_child') {
@@ -3228,7 +3296,7 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
     if (ending.id === 'progress') {
       return {
         ...ending,
-        desc: "Your wellbeing: {his_wellbeing}%. {partnerName}'s: {her_wellbeing}%. Household atmosphere: {child_wellbeing}%. You're managing. Not thriving — managing. The week had good moments and expensive ones. No one collapsed, but the house still feels a bit brittle. The question isn't whether this week was okay. It's whether you can keep doing this."
+        desc: "Your wellbeing: {his_wellbeing}%. {partnerName}'s: {her_wellbeing}%. Household atmosphere: {child_wellbeing}%. You're managing. Not thriving, but managing. The week had good moments and costly ones. No one collapsed, but the house still feels tense. The question is whether you can keep doing this."
       };
     }
     return ending;
@@ -3322,8 +3390,15 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
       this.root.innerHTML = `
         <div class="screen active">
           <div class="progress-bar"><div class="progress-fill" style="width:${progress}%"></div></div>
-          <div class="meters-panel"><p class="label">Your current state</p>${this.renderMeters()}</div>
           <div class="card">
+            <div class="header">
+              <div>
+                <p class="label">${this.scenarioDef.title}</p>
+                <p style="font-weight: 500;">${scene.day}, ${scene.time}</p>
+              </div>
+              <span style="font-size: 12px; color: #888;">${this.currentIndex + 1} of ${this.scenarios.length}</span>
+            </div>
+            <p style="font-size:13px;color:#666;margin-bottom:14px;"><strong>Goal:</strong> ${this.scenarioDef.goal}</p>
             <p class="scene-text">${this.replaceVars(scene.sceneText)}</p>
             <div class="context-box">${this.replaceVars(scene.context)}</div>
             <div class="signal-box" style="border-left-color:#888;">
@@ -3352,11 +3427,6 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
       <div class="screen active">
         <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>
 
-        <div class="meters-panel">
-          <p class="label">Your current state</p>
-          ${this.renderMeters()}
-        </div>
-
         <div class="card">
           <div class="header">
             <div>
@@ -3369,9 +3439,10 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
               ${scene._aiAdapted === false ? '<span style="font-size:10px;color:#aaa;background:#f8f8f8;padding:2px 6px;border-radius:8px;">fallback</span>' : ''}
             </div>
           </div>
+          <p style="font-size:13px;color:#666;margin-bottom:14px;"><strong>Goal:</strong> ${this.scenarioDef.goal}</p>
 
           <p class="scene-text">${this.replaceVars(scene.sceneText)}</p>
-          <p class="label" style="margin-top:14px;margin-bottom:6px;">What this moment is really about</p>
+          <p class="label" style="margin-top:14px;margin-bottom:6px;">Context</p>
           <div class="context-box">${this.replaceVars(context)}</div>
 
           <div id="choices-container">${choicesHtml}</div>
@@ -3444,15 +3515,10 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
     // Hide choices, show signal
     document.getElementById('choices-container').style.display = 'none';
     
-    const changesHtml = changes.map(c => 
-      `<span class="meter-change ${c.positive ? 'change-up' : 'change-down'}">${c.name} ${c.change}</span>`
-    ).join('');
-    
     let signalHtml = `
       <div class="signal-box">
         <p class="signal-text">${this.replaceVars(choice.signal)}</p>
         ${choice.accumulation ? `<p class="accumulation">⚠️ ${this.replaceVars(choice.accumulation)}</p>` : ''}
-        <div class="meter-changes">${changesHtml}</div>
       </div>
     `;
     
@@ -3470,12 +3536,6 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
     signalHtml += `<button class="btn btn-primary" onclick="game.nextScene()">Continue →</button>`;
     
     document.getElementById('signal-container').innerHTML = signalHtml;
-    
-    // Update meters display
-    document.querySelector('.meters-panel').innerHTML = `
-      <p class="label">Your current state</p>
-      ${this.renderMeters()}
-    `;
   }
   
   nextScene() {
@@ -3640,6 +3700,40 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
         <div class="card">
           <h3 style="margin-bottom:14px;">Reflection</h3>
 
+          <label class="label">Did you play as yourself or more as a hypothetical person?</label>
+          <select id="post_played_as" style="margin-bottom:16px;">
+            <option value="">Select...</option>
+            <option value="self">Mostly as myself</option>
+            <option value="mix">A mix of myself and a hypothetical person</option>
+            <option value="hypothetical">Mostly as a hypothetical person</option>
+          </select>
+
+          <label class="label">What were you mainly trying to keep hold of?</label>
+          <select id="post_main_focus" style="margin-bottom:16px;">
+            <option value="">Select...</option>
+            ${this.scenarioType === 'employer' ? `
+              <option value="employee">Keeping the employee</option>
+              <option value="performance">Keeping performance up</option>
+              <option value="fairness">Keeping things fair</option>
+              <option value="disruption">Avoiding disruption</option>
+            ` : this.scenarioType === 'family_planning' ? `
+              <option value="career">Your standing at work</option>
+              <option value="relationship">Your relationship</option>
+              <option value="partner_stress">Your partner's stress</option>
+              <option value="shared_effort">How much effort came from both of you</option>
+            ` : this.scenarioType === 'domestic_labour' ? `
+              <option value="work">Work performance</option>
+              <option value="relationship">Your relationship</option>
+              <option value="peace">Keeping the peace at home</option>
+              <option value="load">Stopping things landing mostly on her</option>
+            ` : `
+              <option value="work">Work performance</option>
+              <option value="energy">Your own energy</option>
+              <option value="family_time">Family time</option>
+              <option value="peace">Keeping the peace at home</option>
+            `}
+          </select>
+
           <label class="label">Which moment felt hardest to choose?</label>
           <select id="post_hardest" style="margin-bottom:16px;">
             <option value="">Select...</option>
@@ -3676,6 +3770,8 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
 
     this.postSurveyData = {
       realism:            document.querySelector('input[name="post_realism"]:checked')?.value || null,
+      playedAs:           document.getElementById('post_played_as')?.value || null,
+      mainFocus:          document.getElementById('post_main_focus')?.value || null,
       hardestChoice:      document.getElementById('post_hardest')?.value || null,
       mostRealisticMoment:document.getElementById('post_realistic_moment')?.value || null,
       irlChoices,
