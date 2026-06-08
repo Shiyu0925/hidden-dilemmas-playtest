@@ -668,7 +668,7 @@ const SCENARIOS = {
       day: "Monday",
       time: "8:40am",
       sceneText: "You planned to work from home today and go with {partnerName} to {familyAppointment} at lunchtime. At 8:40, your manager messages the team: 'I'm in the office today if anyone wants to come in. Need a couple of people here before lunch to go through yesterday's handover notes.'",
-      context: "The appointment was booked last week. The handover can be done from home, but it will be more visible if you show up in person.",
+      context: "The appointment was booked last week. The handover can be done from home. If you go in, people will notice you made the trip.",
       choices: [
         {
           id: "A",
@@ -680,7 +680,7 @@ const SCENARIOS = {
         },
         {
           id: "B",
-          main: "Message your manager that you are working from home because you have {familyAppointment} at lunch.",
+          main: "Message your manager that you are working from home because you have a clinic appointment at lunch.",
           effects: { relationship: +12, alignment: +10, her_stress: -8, career: -8 },
           signal: "When you tell her you are staying home, some of the tension goes out of her face. Later, you leave together instead of one of you going alone.",
           accumulation: "You kept the plan, but you also made yourself visible as the one not in the room.",
@@ -688,7 +688,7 @@ const SCENARIOS = {
         },
         {
           id: "C",
-          main: "Stay home, say you will cover the handover notes from there, and don't mention the {familyAppointment}.",
+          main: "Stay home, say you will cover the handover notes from there, and don't say why you need to leave at lunch.",
           effects: { relationship: +3, alignment: -1, her_stress: +2, career: +4 },
           signal: "You keep the plan, but spend the morning proving you are still fully on it. By the time you leave, work is still sitting on your shoulders.",
           accumulation: "You stayed home, but you spent the morning paying for it.",
@@ -1266,11 +1266,11 @@ const FAMILY_PLANNING_BRANCH = {
     id: "fp_2_closed_homecare",
     day: "Tuesday",
     time: "3:20pm",
-    sceneText: "Tuesday, 3:20pm. Your next call is not until 4. {partnerName} has been managing the kids and the house since morning. The breakfast dishes are still there, one child still needs sorting for tomorrow, and your manager pings: 'Any chance you can review the draft before EOD? Just 20 minutes.' You look at the message. You look at the clock.",
-    context: "The dishes are still there. One child still needs sorting for tomorrow. Your manager wants the draft before the end of the day.",
+    sceneText: "Tuesday, 3:20pm. Your next call is not until 4. {partnerName} has been with your child all day. The breakfast dishes are still there, dinner has not been started, and one child still needs things ready for tomorrow. Your manager pings: 'Any chance you can review the draft before EOD? Just 20 minutes.' You look at the message. You look at the clock.",
+    context: "The dishes are still there. Dinner still needs starting. Tomorrow's child stuff is still waiting. Your manager wants the draft before the end of the day.",
     choices: [
       { id: "A", main: "Reply immediately: \"On it now.\" Use the free half hour for work." , effects: { relationship: -10, her_stress: +12, alignment: -8, career: +8 }, signal: "You sent the review in 22 minutes. Downstairs, nothing changed. The load stayed where it was.", accumulation: "The message went back. The kitchen stayed as it was.", storySignal: { connection: 0, avoidance: 1, workIntrusion: 2, involvement: 0, reliability: -1, repair: 0 } },
-      { id: "B", main: "\"I can get it back later.\" Use the free half hour on the kitchen and what still needs doing for tomorrow." , effects: { relationship: +13, her_stress: -11, alignment: +11, career: -9 }, signal: "She looked up when you appeared. 'You're not on calls?' You sorted the kitchen and helped with what still needed doing. By the time you got back upstairs, the review was no longer a quick favour.", accumulation: "The kitchen got sorted. The work reply became the thing waiting on you.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 2, reliability: 0, repair: 0 } }
+      { id: "B", main: "\"I can get it back later.\" Use the free half hour on the dishes, dinner, and what still needs doing for tomorrow." , effects: { relationship: +13, her_stress: -11, alignment: +11, career: -9 }, signal: "She looked up when you appeared. 'You're not on calls?' You got the kitchen moving and helped sort what still needed doing for tomorrow. By the time you got back upstairs, the review was no longer a quick favour.", accumulation: "The kitchen got moving. The work reply became the thing waiting on you.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 2, reliability: 0, repair: 0 } }
     ]
   },
 
@@ -1307,7 +1307,7 @@ const FAMILY_PLANNING_BRANCH = {
     context: "The dishes are still there. Dinner still needs sorting. The task could be finished now or left until later.",
     choices: [
       { id: "A", main: "Finish the last task first, then come back and deal with the kitchen properly." , effects: { relationship: -8, her_stress: +6, alignment: -8, career: +4 }, signal: "She nods, but she does not look very happy. By the time you come back, the evening has moved on a bit.", accumulation: "By the time you came back, she had already moved the evening on.", storySignal: { connection: 0, avoidance: 1, workIntrusion: 1, involvement: 0, reliability: -1, repair: 0 } },
-      { id: "B", main: "Leave the task until later and start dealing with the dishes, dinner, or tomorrow's prep now." , effects: { relationship: +12, her_stress: -10, alignment: +12, career: -7 }, signal: "She watches you get on with the evening without being asked. It does not fix everything, but it changes the room. The task is still waiting when the house finally quiets down.", accumulation: "You were already in the kitchen before she had to ask. The work task followed you into later.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 2, reliability: 0, repair: 1 } }
+      { id: "B", main: "Leave the task until later and start on the dishes and dinner now." , effects: { relationship: +12, her_stress: -10, alignment: +12, career: -7 }, signal: "She watches you get on with the evening without being asked. It does not fix everything, but it changes the room. The task is still waiting when the house finally quiets down.", accumulation: "You were already in the kitchen before she had to ask. The work task followed you into later.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 2, reliability: 0, repair: 1 } }
     ]
   },
 
@@ -1319,7 +1319,7 @@ const FAMILY_PLANNING_BRANCH = {
     context: "The dishes are still there. Dinner still needs sorting. The task is still sitting in the background.",
     choices: [
       { id: "A", main: "Finish the last task first, then come back and deal with the kitchen properly." , effects: { relationship: -10, her_stress: +8, alignment: -10, career: +4 }, signal: "By the time you come back, she has already got on with the evening. It feels different from a few minutes earlier.", accumulation: "You came back to an evening that had already moved on without you.", storySignal: { connection: 0, avoidance: 1, workIntrusion: 2, involvement: 0, reliability: -1, repair: 0 } },
-      { id: "B", main: "Leave the task until later and start dealing with the dishes, dinner, or tomorrow's prep now." , effects: { relationship: +8, her_stress: -8, alignment: +8, career: -7 }, signal: "She notices you are properly there this time. It does not erase yesterday's split attention, but it keeps it from becoming the pattern. The task is still hanging there once the evening settles.", accumulation: "You left the task and got on with the evening instead. Work was still waiting later.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 2, reliability: 0, repair: 1 } }
+      { id: "B", main: "Leave the task until later and start on the dishes and dinner now." , effects: { relationship: +8, her_stress: -8, alignment: +8, career: -7 }, signal: "She notices you are properly there this time. It does not erase yesterday's split attention, but it keeps it from becoming the pattern. The task is still hanging there once the evening settles.", accumulation: "You left the task and got on with the evening instead. Work was still waiting later.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 2, reliability: 0, repair: 1 } }
     ]
   },
 
@@ -1396,12 +1396,12 @@ const FAMILY_PLANNING_BRANCH = {
     id: "fp_4_out_loud_parenting",
     day: "Friday",
     time: "12:40pm",
-    sceneText: "Friday, 12:40pm. You are on your lunch break. A work task would clear your afternoon a bit if you finish it now. One child still needs what they will need after school laid out. Monday morning's school stuff also still needs sorting before the weekend swallows it.",
-    context: "Your break is about 20 minutes. You have time to do one thing properly: the work task, the after-school prep, or Monday morning's school prep.",
+    sceneText: "Friday, 12:40pm. You are on your lunch break. A work task would clear your afternoon a bit if you finish it now. One child still needs the later-today things laid out. Monday's bag still needs sorting too: spare clothes, water bottle, and the form that still is not signed.",
+    context: "Your break is about 20 minutes. You have time to do one thing properly: the work task, the later-today prep, or Monday's bag.",
     choices: [
-      { id: "A", main: "Use the break to finish the work task and keep the afternoon clearer." , effects: { relationship: -6, her_stress: +4, career: +5, alignment: -6 }, signal: "You finish the task and feel more on top of work. The after-school things are still waiting when the afternoon starts.", accumulation: "The work task was done. The after-school prep was still waiting.", storySignal: { connection: 0, avoidance: 0, workIntrusion: 1, involvement: 0, reliability: 0, repair: 0 } },
-      { id: "B", main: "Use the break to get the after-school things laid out, and leave the work task until later." , effects: { relationship: +5, her_stress: -4, career: -3, alignment: +4 }, signal: "{partnerName} notices before saying anything. One visible part of the rush is handled before it starts, but Monday morning is still sitting there in the background.", accumulation: "The after-school prep was done. Monday morning still needed thinking about.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 1, reliability: 0, repair: 0 } },
-      { id: "C", main: "Use the break to get Monday morning's school stuff ready, and leave the work task until later." , effects: { relationship: +8, her_stress: -6, career: -4, alignment: +8 }, signal: "{partnerName} notices before saying anything. The afternoon does not become easy, but one of the jobs that usually sits in someone's head is already done.", accumulation: "Monday morning's school prep was done. The work task was still there for later.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 2, reliability: 1, repair: 0 } }
+      { id: "A", main: "Use the break to finish the work task and keep the afternoon clearer." , effects: { relationship: -6, her_stress: +4, career: +5, alignment: -6 }, signal: "You finish the task and feel more on top of work. The child stuff is still waiting when the afternoon starts.", accumulation: "The work task was done. The child prep was still waiting.", storySignal: { connection: 0, avoidance: 0, workIntrusion: 1, involvement: 0, reliability: 0, repair: 0 } },
+      { id: "B", main: "Use the break to lay out the things your child will need later today, and leave the work task until later." , effects: { relationship: +5, her_stress: -4, career: -3, alignment: +4 }, signal: "{partnerName} notices before saying anything. One visible part of the rush is handled before it starts, but Monday is still sitting there in the background.", accumulation: "Later-today prep was done. Monday's bag still needed thinking about.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 1, reliability: 0, repair: 0 } },
+      { id: "C", main: "Use the break to sort Monday's bag, the spare clothes, and the unsigned form, and leave the work task until later." , effects: { relationship: +8, her_stress: -6, career: -4, alignment: +8 }, signal: "{partnerName} notices before saying anything. The afternoon does not become easy, but one of the jobs that usually sits in someone's head is already done.", accumulation: "Monday's bag was sorted. The work task was still there for later.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 2, reliability: 1, repair: 0 } }
     ]
   }
 };
@@ -1428,7 +1428,7 @@ const ENDINGS = {
       insight: "Daily micro-moments of support and responsiveness are what maintain relationship quality — and make space for the bigger decisions." },
     { id: "progress", condition: () => true, style: "ending-neutral", title: "Better, But Still Unclear",
       desc: "By the end of the week, things looked a bit better than they did at the start, but not settled. Shared direction reached {alignment}%. That is enough to suggest this might work, but not enough to feel confident about it yet.",
-      insight: "One better week can matter. It just usually takes more than one better week before it feels like a real change." }
+      insight: "Research suggests working from home is most likely to support fertility plans when it gives fathers more real control over time at home, not just more time spent answering emails in the house." }
   ],
   mental_health: [
     { id: "win",
@@ -1758,13 +1758,13 @@ class Game {
       unspecified:'what the next version of life might realistically ask of you both'
     }[this.storyState?.familyContext || 'unspecified'];
     const familyAppointment = {
-      first_child:'an appointment you said you would go to together',
-      another_child:'an appointment about another baby',
-      another_unsure:'an appointment about another baby',
+      first_child:'a clinic appointment you said you would go to together',
+      another_child:'a clinic appointment you said you would go to together',
+      another_unsure:'a clinic appointment you said you would go to together',
       trying_now:'a fertility follow-up appointment',
       expecting:'an antenatal appointment',
-      unsure:'an appointment you said you would go together',
-      unspecified:'an appointment you said you would go together'
+      unsure:'a clinic appointment you said you would go to together',
+      unspecified:'a clinic appointment you said you would go to together'
     }[this.storyState?.familyContext || 'unspecified'];
     const futureQuestion = {
       first_child:"Everything already feels full in a way that is getting harder to ignore.",
@@ -1914,7 +1914,7 @@ class Game {
 
     const stage = score < 35 ? 0 : score < 52 ? 1 : score < 70 ? 2 : 3;
     const state = (states[this.scenarioType] || states.family_planning)[stage];
-    const activeCount = delta <= -24 ? 1 : delta <= -12 ? 2 : delta <= -4 ? 3 : 4;
+    const activeCount = delta <= -14 ? 1 : delta <= -5 ? 2 : delta <= -1 ? 3 : 4;
     return {
       ...state,
       score: Math.round(score),
@@ -2690,6 +2690,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
 
     if (isPartnerHome) {
       sceneText = sceneText
+        .replace(/\bhome office\b/gi, 'work room')
         .replace(/comes downstairs after closing (?:her|their|his) laptop/gi, 'comes in from the other room')
         .replace(/after closing (?:her|their|his) laptop/gi, 'after a long day at home')
         .replace(/you can hear (?:her|their|his) on calls in the other room/gi, `you can hear ${pObj} moving around in the other room`)
@@ -2700,6 +2701,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
         .replace(/\b(?:she|he|they) (?:has|have) been working since early this morning\b/gi, '{partnerName} already looks tired')
         .replace(/\b(?:she|he|they)(?:'s| have| has) been downstairs working since [^.,]+/gi, '{partnerName} has been downstairs all morning');
       context = context
+        .replace(/\bhome office\b/gi, 'work room')
         .replace(/working from home all morning/gi, 'at home all morning')
         .replace(/\b(?:she|he|they) (?:has|have) been working since early this morning\b/gi, '{partnerName} has already had a long day at home')
         .replace(/\b(?:she|he|they)(?:'s| have| has) been downstairs working since [^.,]+/gi, '{partnerName} has already had a long day at home');
@@ -3047,6 +3049,7 @@ ADAPT (make changes like these):
    • Keep mental-health contexts descriptive rather than instructive. State the situation plainly; do not tell the player what the moment is teaching
 2b. FAMILY-PLANNING PATH — keep the four-scene structure and the core father WFH dilemma:
    • Scene 1 = fertility or family appointment day. The choice is whether he uses WFH flexibility for the family plan, lets work displace it, or tries to squeeze both together
+   • For scene 1, a good option set is: go in and miss it, stay home and name the clinic/family appointment, or stay home without naming why you need to leave at lunch
    • Scene 2 = the house remembers. Show the pattern through housework, childcare, prep, or evening load rather than through a formal discussion
    • Scene 3 = private couple-time interrupted by work. A quiet moment together is where work tries to come back in
    • Scene 4 = a short Friday lunch-break fork. Name one exact work task and one exact home or family task, then make him choose which one gets the break
@@ -3084,10 +3087,13 @@ ADAPT (make changes like these):
    • Do NOT use markdown emphasis or asterisks like *her* or **important** in the scene text. Build emphasis into the sentence naturally
    • If she is not employed, do NOT give her a work laptop, work calls, office-like details, or a line about having worked all day
    • If she is not employed, do NOT mention a commute, office arrival, or work deadlines for her
+   • Do NOT say "home office" unless the profile has clearly established a separate office room. Prefer "desk", "work room", "upstairs", or "the other room"
    • Prefer "working from home" over over-specific phrases like "at the kitchen table" unless that domestic detail adds something important and plausible
    • The grey context box should stay inside the story. Keep it plain, helpful, and easy to read. State the facts of the moment, but do not explain the game mechanic or tell the player what makes the choice hard
    • The grey context box should describe the immediate situation only. Do NOT summarise the whole week, tell the player what their partner has noticed, or explain what the scene "really means"
    • Avoid lines like "this week has felt different", "she has noticed", "it has been building", or "the real question is". That sounds manipulative
+   • Avoid commentary phrases like "and it shows", "her tone is flat", or "not angry, but not light either". Show the mood through one concrete detail or one short line of dialogue instead
+   • For bedtime or under-5 scenes, keep the language plain and familiar. A line like "She had a rough afternoon. Bed at seven if we start now" is better than abstract narration
    • For family-planning scene 1, keep the appointment logic clear. If it is a fertility, trying-for-another-baby, or antenatal appointment, do NOT turn it into your child's GP appointment or school appointment
    • If scene 1 says the two of you planned to go together at lunch, do NOT rewrite it as if your partner already left for the office and the joint plan no longer makes sense
    • Do NOT mention a partner's commute in every scene. Only mention it when it changes the pressure in that moment
