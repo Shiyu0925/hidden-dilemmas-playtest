@@ -300,6 +300,80 @@
       font-size: 14px;
       margin-top: 10px;
     }
+    .outlook-card {
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+      border: 1px solid #ececec;
+      background: #fafafa;
+    }
+    .outlook-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .outlook-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #888;
+      font-weight: 600;
+    }
+    .outlook-state {
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .outlook-visual {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .outlook-pip {
+      flex: 1;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.08);
+      transition: transform 0.25s ease, opacity 0.25s ease, background 0.25s ease;
+      opacity: 0.45;
+    }
+    .outlook-pip.active {
+      background: var(--outlook-color, #4A90D9);
+      opacity: 1;
+      transform: scaleY(1.05);
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.5) inset;
+    }
+    .outlook-note {
+      font-size: 12px;
+      line-height: 1.45;
+      color: #666;
+      margin: 0;
+    }
+    .outlook-good {
+      --outlook-color: #34C759;
+      background: #f4fff7;
+      border-color: #d8f2df;
+    }
+    .outlook-good .outlook-state { color: #228b47; }
+    .outlook-steady {
+      --outlook-color: #4A90D9;
+      background: #f5faff;
+      border-color: #dceaf8;
+    }
+    .outlook-steady .outlook-state { color: #2d6fb6; }
+    .outlook-warning {
+      --outlook-color: #DAA520;
+      background: #fffaf0;
+      border-color: #f2e4ba;
+    }
+    .outlook-warning .outlook-state { color: #9c7414; }
+    .outlook-danger {
+      --outlook-color: #E57373;
+      background: #fff6f6;
+      border-color: #f1d7d7;
+    }
+    .outlook-danger .outlook-state { color: #b34e4e; }
 
     /* Character creation layout */
     .char-create-wrap {
@@ -1568,6 +1642,11 @@ class Game {
     if (!def) return def;
     if (scenarioId === 'family_planning') {
       const hasChildren = this.hasCurrentChildrenProfile();
+      const familyDesc = this.surveyData?.children === 'expecting'
+        ? "A baby is already on the way. This week tests whether getting ready still feels shared."
+        : hasChildren
+          ? "You both want another child. This week tests whether that still feels realistic."
+          : "You both want a child. This week tests whether that still feels realistic.";
       const familyGoal = this.surveyData?.children === 'expecting'
         ? "Get to the end of the week with the baby feeling like something you are both getting ready for."
         : hasChildren
@@ -1575,6 +1654,7 @@ class Game {
           : "See whether having a child still feels realistic by the end of the week.";
       return {
         ...def,
+        description: familyDesc,
         goal: familyGoal
       };
     }
@@ -1688,6 +1768,95 @@ class Game {
     }
     return result;
   }
+
+  getScenarioOutlook() {
+    const avg = values => values.reduce((sum, value) => sum + value, 0) / values.length;
+    const clamp = value => Math.max(0, Math.min(100, value));
+    let score = 50;
+
+    if (this.scenarioType === 'family_planning') {
+      score = avg([
+        this.meters.relationship ?? 50,
+        100 - (this.meters.her_stress ?? 50),
+        this.meters.alignment ?? 50,
+        this.meters.career ?? 50
+      ]);
+    } else if (this.scenarioType === 'mental_health') {
+      score = avg([
+        this.meters.his_wellbeing ?? 50,
+        this.meters.her_wellbeing ?? 50,
+        this.meters.child_wellbeing ?? 50,
+        this.meters.family_time ?? 50
+      ]);
+    } else if (this.scenarioType === 'domestic_labour') {
+      const perceptionGap = 100 - Math.abs((this.meters.his_perception ?? 50) - (this.meters.her_perception ?? 50));
+      score = avg([
+        clamp(perceptionGap),
+        this.meters.her_perception ?? 50,
+        this.meters.actual_split ?? 50,
+        this.meters.mental_load ?? 50
+      ]);
+    } else if (this.scenarioType === 'employer') {
+      score = avg([
+        this.meters.retention ?? 50,
+        this.meters.team_perception ?? 50,
+        this.meters.productivity ?? 50,
+        this.meters.culture_signal ?? 50
+      ]);
+    }
+
+    const states = {
+      family_planning: [
+        { label: "feels far off", note: "Too much is pulling against this right now.", tone: "danger" },
+        { label: "fragile", note: "Still in play, but it would not take much to knock it off course.", tone: "warning" },
+        { label: "still possible", note: "You are not losing ground, but this still needs care from both of you.", tone: "steady" },
+        { label: "more realistic", note: "This week is helping it feel more doable, not just more discussed.", tone: "good" }
+      ],
+      mental_health: [
+        { label: "running too hot", note: "The strain is spreading through the house now.", tone: "danger" },
+        { label: "stretched thin", note: "You are getting through it, but not comfortably.", tone: "warning" },
+        { label: "holding", note: "There is still pressure, but it has not taken over the week.", tone: "steady" },
+        { label: "steady enough", note: "The week still has some room to breathe.", tone: "good" }
+      ],
+      domestic_labour: [
+        { label: "landing on her", note: "Home is still defaulting back onto her by the end of the day.", tone: "danger" },
+        { label: "only partly shifting", note: "Some things are moving, but too much is still finding its way back to her.", tone: "warning" },
+        { label: "more shared", note: "The week looks more balanced than it did at the start.", tone: "steady" },
+        { label: "clearly shifting", note: "Being at home is changing who is actually carrying the week.", tone: "good" }
+      ],
+      employer: [
+        { label: "wobbling", note: "Too much strain is building under the arrangement.", tone: "danger" },
+        { label: "fragile", note: "It still works, but it would be hard to defend if pushed.", tone: "warning" },
+        { label: "holding", note: "The arrangement is working well enough to stay credible.", tone: "steady" },
+        { label: "working well", note: "The arrangement is helping rather than creating drag.", tone: "good" }
+      ]
+    };
+
+    const stage = score < 35 ? 0 : score < 52 ? 1 : score < 70 ? 2 : 3;
+    const state = (states[this.scenarioType] || states.family_planning)[stage];
+    return {
+      ...state,
+      score: Math.round(score),
+      activeCount: stage + 1
+    };
+  }
+
+  renderOutlookCard(title = "Week outlook") {
+    const outlook = this.getScenarioOutlook();
+    const pips = Array.from({ length: 4 }, (_, index) => `
+      <span class="outlook-pip ${index < outlook.activeCount ? 'active' : ''}"></span>
+    `).join('');
+    return `
+      <div class="outlook-card outlook-${outlook.tone}">
+        <div class="outlook-top">
+          <span class="outlook-label">${title}</span>
+          <span class="outlook-state">${outlook.label}</span>
+        </div>
+        <div class="outlook-visual" aria-hidden="true">${pips}</div>
+        <p class="outlook-note">${outlook.note}</p>
+      </div>
+    `;
+  }
   
   showTitleScreen() {
     this.root.innerHTML = `
@@ -1746,7 +1915,7 @@ class Game {
       <div style="display:flex;gap:6px;margin-bottom:6px;">
         ${[1,2,3,4,5].map(n => `
           <label style="display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px;color:#666;flex:1;cursor:pointer;">
-            <input type="radio" name="${id}" value="${n}" style="width:auto;margin:0;padding:0;">${n}
+            <input type="radio" name="${id}" value="${n}" style="width:auto;margin:0;padding:0;">${n}${n === 3 ? '<span style="font-size:10px;color:#999;">Neutral</span>' : ''}
           </label>
         `).join('')}
       </div>
@@ -2145,15 +2314,15 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
       mental_health: noChildren
         ? "This week is not only about your workload. It is also about whether the strain spills into your relationship and the whole atmosphere at home."
         : "This week is not only about your workload. It is also about whether the strain spills into your partner, your child, and the whole mood at home.",
-      domestic_labour: "This week is not only about doing a few visible tasks. It is also about whether you take on real responsibility, whether she feels that shift, and whether work keeps pulling you back out of the house.",
+      domestic_labour: "This week is not only about doing a few chores. It is also about whether you take real responsibility, whether she feels that shift, and whether work keeps pulling you back out of the house.",
       employer: "Keeping a good employee is not enough on its own. The arrangement also has to hold up in practice, feel fair enough to the team, and avoid becoming something fragile or one-off."
     };
     const meterHelp = {
       family_planning: {
-        relationship: "A child can feel more realistic when the relationship feels steady.",
-        her_stress: "If too much is landing on her, having a child may feel too hard right now.",
-        alignment: "Having a child can feel more realistic when the effort, planning, and pressure do not fall mostly on one person.",
-        career: "If work feels shaky, having a child may feel too risky."
+        relationship: "If things between you feel shaky, having a child can start to feel like too much.",
+        her_stress: "If too much keeps landing on her, having a child can stop feeling realistic.",
+        alignment: "If the effort, planning, and pressure keep landing mostly on one person, this stops feeling like a joint decision.",
+        career: "If work starts feeling shaky, having a child can feel riskier."
       },
       mental_health: {
         his_wellbeing: "If you are running on empty, it spills into everything else.",
@@ -2164,10 +2333,10 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
         family_time: "A week can function on paper and still leave no real time for each other."
       },
       domestic_labour: {
-        his_perception: "How much you think you have contributed this week.",
-        her_perception: "How much she feels you have contributed this week.",
-        actual_split: "The tasks you really absorbed, not just the ones you started or helped with.",
-        mental_load: "How much of the noticing, organising, and keeping track came from you."
+        his_perception: "How much you think you contributed this week.",
+        her_perception: "How much she feels you contributed this week.",
+        actual_split: "The jobs you actually took off the table, not just the ones you touched.",
+        mental_load: "How much of the noticing, organising, and remembering came from you."
       },
       employer: {
         retention: "If the arrangement feels too hard or too fragile, they may leave.",
@@ -2232,10 +2401,10 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
 
           ${interconnectionNote}${perceptionGapNote}${familyPlanningNote}${employerCultureNote}
 
-          <p class="label">What you're managing</p>
+          <p class="label">What tends to affect this</p>
           <div style="margin-bottom:16px;">${meterDescriptions}</div>
 
-          <p class="label">The game ends early if...</p>
+          <p class="label">The week can go badly off track if...</p>
           <ul style="padding-left:16px;margin-bottom:20px;">${failList}</ul>
 
           <p style="font-size:13px;color:#888;margin-bottom:20px;">There is no single right answer. Every choice has trade-offs.</p>
@@ -2778,6 +2947,9 @@ ADAPT (make changes like these):
    • The grey context box should stay inside the story. Keep it plain, helpful, and easy to read. State the facts of the moment, but do not explain the game mechanic or tell the player what makes the choice hard
    • The grey context box should describe the immediate situation only. Do NOT summarise the whole week, tell the player what their partner has noticed, or explain what the scene "really means"
    • Avoid lines like "this week has felt different", "she has noticed", "it has been building", or "the real question is". That sounds manipulative
+   • For family-planning scene 1, keep the appointment logic clear. If it is a fertility, trying-for-another-baby, or antenatal appointment, do NOT turn it into your child's GP appointment or school appointment
+   • If scene 1 says the two of you planned to go together at lunch, do NOT rewrite it as if your partner already left for the office and the joint plan no longer makes sense
+   • Do NOT mention a partner's commute in every scene. Only mention it when it changes the pressure in that moment
 3. INDUSTRY FLAVOUR — make work references real:
    • If the scene mentions work, the work part should sound like his sector or occupation, not generic office filler
    • Replace vague phrases like "work task", "manager ping", "client thing", "last task", or "deadline" with one believable sector-specific equivalent whenever the work detail is visible in the scene
@@ -2837,6 +3009,12 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
         context:   parsed.context || scene.context,
         _aiAdapted: true
       });
+      if (this.scenarioType === 'family_planning' && scene.id === 'fp_1') {
+        if (/(daughter|son|child).{0,30}appointment/i.test(personalized.sceneText) || /left for (?:her|their|his) office/i.test(personalized.sceneText)) {
+          personalized.sceneText = scene.sceneText;
+          personalized.context = scene.context;
+        }
+      }
       personalized._aiAdapted = true;
       this.sceneCache[cacheKey] = personalized;
       return personalized;
@@ -3399,6 +3577,7 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
               <span style="font-size: 12px; color: #888;">${this.currentIndex + 1} of ${this.scenarios.length}</span>
             </div>
             <p style="font-size:13px;color:#666;margin-bottom:14px;"><strong>Goal:</strong> ${this.scenarioDef.goal}</p>
+            ${this.renderOutlookCard()}
             <p class="scene-text">${this.replaceVars(scene.sceneText)}</p>
             <div class="context-box">${this.replaceVars(scene.context)}</div>
             <div class="signal-box" style="border-left-color:#888;">
@@ -3440,6 +3619,7 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
             </div>
           </div>
           <p style="font-size:13px;color:#666;margin-bottom:14px;"><strong>Goal:</strong> ${this.scenarioDef.goal}</p>
+          ${this.renderOutlookCard()}
 
           <p class="scene-text">${this.replaceVars(scene.sceneText)}</p>
           <p class="label" style="margin-top:14px;margin-bottom:6px;">Context</p>
@@ -3605,6 +3785,7 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
         </div>
 
         <div class="card" style="margin-top:0;border-radius:0 0 12px 12px;">
+          ${this.renderOutlookCard("By the end of the week")}
           <p class="label" style="margin-bottom:10px;">How the week played out</p>
           <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;">${meterCards}</div>
 
@@ -3752,8 +3933,8 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
           <label class="label">What surprised you most about your own choices? (optional)</label>
           <textarea id="post_surprise" placeholder="e.g. I thought I'd always prioritise work, but..." style="width:100%;padding:12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;min-height:70px;resize:vertical;margin-bottom:20px;"></textarea>
 
-          <button class="btn btn-primary" onclick="game.savePostSurvey()">Submit and view data →</button>
-          <button onclick="game.showData()" style="background:none;border:none;color:#888;font-size:13px;cursor:pointer;margin-top:8px;display:block;width:100%;text-align:center;">Skip → view data only</button>
+          <button class="btn btn-primary" onclick="game.savePostSurvey()">Submit and see summary →</button>
+          <button onclick="game.showData()" style="background:none;border:none;color:#888;font-size:13px;cursor:pointer;margin-top:8px;display:block;width:100%;text-align:center;">Skip → view raw data only</button>
         </div>
       </div>
     `;
@@ -3779,7 +3960,62 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
       surpriseMoment:     document.getElementById('post_surprise')?.value?.trim() || null,
     };
     this.savePostSurveyRecord();
-    this.showData();
+    this.showReflectionSummary();
+  }
+
+  showReflectionSummary() {
+    const focusLabels = {
+      career: "your standing at work",
+      relationship: "your relationship",
+      partner_stress: "your partner's stress",
+      shared_effort: "how much effort came from both of you",
+      work: "work performance",
+      energy: "your own energy",
+      family_time: "family time",
+      peace: "keeping the peace at home",
+      load: "stopping things landing mostly on her",
+      employee: "keeping the employee",
+      performance: "keeping performance up",
+      fairness: "keeping things fair",
+      disruption: "avoiding disruption"
+    };
+    const playedAsLabels = {
+      self: "Mostly as yourself",
+      mix: "A mix of yourself and a hypothetical person",
+      hypothetical: "Mostly as a hypothetical person"
+    };
+    const mainFocus = this.postSurveyData?.mainFocus ? (focusLabels[this.postSurveyData.mainFocus] || this.postSurveyData.mainFocus) : "not stated";
+    const playedAs = this.postSurveyData?.playedAs ? (playedAsLabels[this.postSurveyData.playedAs] || this.postSurveyData.playedAs) : "not stated";
+    const endingTitle = this.currentEndingId ? (ENDINGS[this.scenarioType].find(e => e.id === this.currentEndingId)?.title || "Week complete") : "Week complete";
+
+    this.root.innerHTML = `
+      <div class="screen active">
+        <div class="card">
+          <h3>Your week, in one view</h3>
+          <p class="subtitle" style="margin-bottom:18px;">This is a short summary before you look at any raw data.</p>
+
+          <div style="background:#f8f8f8;border-radius:10px;padding:14px;margin-bottom:12px;">
+            <p style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;">Scenario result</p>
+            <p style="font-size:16px;font-weight:600;">${endingTitle}</p>
+          </div>
+
+          <div style="background:#f8f8f8;border-radius:10px;padding:14px;margin-bottom:12px;">
+            <p style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;">You said you played</p>
+            <p style="font-size:15px;">${playedAs}</p>
+          </div>
+
+          <div style="background:#f8f8f8;border-radius:10px;padding:14px;margin-bottom:18px;">
+            <p style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;">You said you were mainly trying to keep hold of</p>
+            <p style="font-size:15px;">${mainFocus}</p>
+          </div>
+
+          <p style="font-size:13px;color:#666;line-height:1.5;margin-bottom:18px;">The game still judged the week using several hidden dimensions at once, not just one. That is why the final result may not line up neatly with the one thing you were most focused on.</p>
+
+          <button class="btn btn-primary" onclick="game.showData()">View raw data →</button>
+          <button class="btn btn-secondary" style="margin-top:8px;" onclick="game.showScenarioSelect()">Back to scenarios</button>
+        </div>
+      </div>
+    `;
   }
 
   showData() {
