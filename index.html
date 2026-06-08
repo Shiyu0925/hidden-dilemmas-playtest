@@ -580,7 +580,7 @@ const SCENARIO_DEFS = {
     failConditions: [
       { meter: "her_stress", threshold: 80, message: "Your partner's strain hits 80% — she's too overwhelmed to think about the future right now." },
       { meter: "career", threshold: 30, below: true, message: "Your standing at work drops below 30% — work anxiety is crowding out everything else." },
-      { meter: "alignment", threshold: 25, below: true, message: "Shared direction falls below 25% — it no longer feels like the two of you are moving toward a child together." },
+      { meter: "alignment", threshold: 25, below: true, message: "The shared effort drops below 25% — it no longer feels like the two of you are moving toward a child together." },
       { meter: "relationship", threshold: 25, below: true, message: "Relationship quality falls below 25% — the emotional distance between you is too wide." }
     ],
     winCondition: { allOf: [
@@ -688,10 +688,10 @@ const SCENARIOS = {
         },
         {
           id: "C",
-          main: "Message your manager that you are working from home, but dont mention about the {familyAppointment}.",
+          main: "Message your manager that you are working from home, but don't mention the {familyAppointment}.",
           effects: { relationship: +2, alignment: -2, her_stress: +3, career: +3 },
           signal: "You keep the plan, but spend the morning half-watching the clock and half-watching Teams. By the time you leave, work is still sitting on your shoulders.",
-          accumulation: "This is the WFH compromise: you are technically there, but work keeps part of you.",
+          accumulation: "This is the working-from-home compromise: you are technically there, but work keeps part of you.",
           storySignal: { connection: 0, avoidance: 0, repair: 0, workIntrusion: 1, involvement: 0, reliability: 1 }
         }
       ]
@@ -1344,7 +1344,19 @@ const FAMILY_PLANNING_BRANCH = {
     id: "fp_4_out_loud_building",
     day: "Friday",
     time: "12:40pm",
-    sceneText: "Friday, 12:40pm. You are on your lunch break. You could use it to finish a work task that would clear your afternoon a bit. Or you could use it to call the clinic back and confirm next week's slot before the line closes for lunch.",
+    sceneText: "Friday, 12:40pm. You are on your lunch break. You could use it to finish a work task that would clear your afternoon a bit. Or you could use it to sort out the call or paperwork you said you would handle, so it is not still sitting there when lunch ends.",
+    context: "Your break is about 20 minutes. Either job would take most of it.",
+    choices: [
+      { id: "A", main: "Use the break to finish the work task and keep the afternoon clearer." , effects: { relationship: -6, her_stress: +4, alignment: -6, career: +5 }, signal: "You finish the task and feel more on top of work. The follow-up is still waiting when the afternoon starts.", accumulation: "Nothing dramatic happened. Work just used the loose space first.", storySignal: { connection: 0, avoidance: 0, workIntrusion: 1, involvement: 0, reliability: 0, repair: 0 } },
+      { id: "B", main: "Use the break to sort out the call or paperwork you said you would handle, and leave the work task until later." , effects: { relationship: +8, her_stress: -6, alignment: +8, career: -4 }, signal: "{partnerName} notices before saying anything. The afternoon does not become easy, but one thing is no longer hanging over both of you.", accumulation: "It was only part of a lunch break. It still changed what being home meant.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 1, reliability: 1, repair: 0 } }
+    ]
+  },
+
+  q4_out_loud_trying: {
+    id: "fp_4_out_loud_trying",
+    day: "Friday",
+    time: "12:40pm",
+    sceneText: "Friday, 12:40pm. You are on your lunch break. You could use it to finish a work task that would clear your afternoon a bit. Or you could use it to call the clinic back and sort out the follow-up before lunch ends.",
     context: "Your break is about 20 minutes. Either job would take most of it.",
     choices: [
       { id: "A", main: "Use the break to finish the work task and keep the afternoon clearer." , effects: { relationship: -6, her_stress: +4, alignment: -6, career: +5 }, signal: "You finish the task and feel more on top of work. The clinic still needs calling back when the afternoon starts.", accumulation: "Nothing dramatic happened. Work just used the loose space first.", storySignal: { connection: 0, avoidance: 0, workIntrusion: 1, involvement: 0, reliability: 0, repair: 0 } },
@@ -1637,25 +1649,63 @@ class Game {
     return ['yes_young', 'yes_school', 'yes_teen'].includes(this.surveyData?.children);
   }
 
+  getFamilyContext() {
+    const children = this.surveyData?.children || '';
+    const familyPlan = this.surveyData?.familyPlan || '';
+
+    if (children === 'expecting') return 'expecting';
+    if (['yes_young', 'yes_school', 'yes_teen'].includes(children)) {
+      if (familyPlan === 'another_want') return 'another_child';
+      if (familyPlan === 'another_unsure') return 'another_unsure';
+      return 'no_family_plan';
+    }
+    if (children === 'no_want') {
+      if (familyPlan === 'trying_now') return 'trying_now';
+      return 'first_child';
+    }
+    if (children === 'no_unsure') return 'unsure';
+    return 'unspecified';
+  }
+
   getAdjustedScenarioDef(scenarioId) {
     const def = SCENARIO_DEFS[scenarioId];
     if (!def) return def;
     if (scenarioId === 'family_planning') {
-      const hasChildren = this.hasCurrentChildrenProfile();
-      const familyDesc = this.surveyData?.children === 'expecting'
-        ? "A baby is already on the way. This week tests whether getting ready still feels shared."
-        : hasChildren
-          ? "You both want another child. This week tests whether that still feels realistic."
-          : "You both want a child. This week tests whether that still feels realistic.";
-      const familyGoal = this.surveyData?.children === 'expecting'
-        ? "Get to the end of the week with the baby feeling like something you are both getting ready for."
-        : hasChildren
-          ? "See whether having another child still feels realistic by the end of the week."
-          : "See whether having a child still feels realistic by the end of the week.";
+      const familyContext = this.getFamilyContext();
+      const familyCopy = {
+        expecting: {
+          description: "A baby is already on the way. This week shows whether you are really getting ready for it together.",
+          goal: "Get to the end of the week feeling more ready for the baby together."
+        },
+        another_child: {
+          description: "You already have children. This week shows whether another child still feels realistic in everyday life.",
+          goal: "See whether having another child still feels realistic by the end of the week."
+        },
+        another_unsure: {
+          description: "You already have children. This week shows whether another child feels any more realistic in your life right now.",
+          goal: "See whether another child feels any more realistic by the end of the week."
+        },
+        trying_now: {
+          description: "You are trying for a child. This week shows whether the effort still feels shared in everyday life.",
+          goal: "See whether trying for a child still feels manageable by the end of the week."
+        },
+        first_child: {
+          description: "You are both open to having a child. This week shows whether that still feels realistic in everyday life.",
+          goal: "See whether having a child still feels realistic by the end of the week."
+        },
+        unsure: {
+          description: "You are not settled on having a child. This week shows whether the idea feels any more realistic by the end of it.",
+          goal: "See whether having a child feels any more realistic by the end of the week."
+        },
+        unspecified: {
+          description: def.description,
+          goal: def.goal
+        }
+      }[familyContext] || { description: def.description, goal: def.goal };
       return {
         ...def,
-        description: familyDesc,
-        goal: familyGoal
+        description: familyCopy.description,
+        goal: familyCopy.goal
       };
     }
     if (scenarioId === 'mental_health' && this.isNoChildrenProfile()) {
@@ -1683,22 +1733,25 @@ class Game {
     const futurePhrase = {
       first_child:'whether your life right now could really hold a child',
       another_child:'whether your life right now could really hold another baby',
+      another_unsure:'whether your life right now could really hold another baby',
       trying_now:'whether you are actually making room for this',
       expecting:'whether life will feel shared once the baby is here',
       unsure:'what the next version of life might realistically ask of you both',
       unspecified:'what the next version of life might realistically ask of you both'
     }[this.storyState?.familyContext || 'unspecified'];
     const familyAppointment = {
-      first_child:'a fertility clinic appointment',
+      first_child:'an appointment you said you would go to together',
       another_child:'an appointment about trying for another baby',
+      another_unsure:'an appointment you said you would go to together',
       trying_now:'a fertility follow-up appointment',
       expecting:'an antenatal appointment',
       unsure:'an appointment you said you would go together',
-      unspecified:'an appointment you said you would gotogether'
+      unspecified:'an appointment you said you would go together'
     }[this.storyState?.familyContext || 'unspecified'];
     const futureQuestion = {
       first_child:"Everything already feels full in a way that is getting harder to ignore.",
       another_child:"What another baby would do to this version of life is getting harder to ignore.",
+      another_unsure:"What another baby would do to this version of life is getting harder to ignore.",
       trying_now:"How little room there is for this once the week starts is getting harder to ignore.",
       expecting:"Whether this will still feel shared once the baby is here is getting harder to ignore.",
       unsure:"What the next version of life might ask of you both is getting harder to ignore.",
@@ -1707,6 +1760,7 @@ class Game {
     const futureSundayPrompt = {
       first_child:"This week has made it hard to ignore what life already feels like at home.",
       another_child:"This week has made it hard to ignore what another baby would ask of this house.",
+      another_unsure:"This week has made it hard to ignore what another baby would ask of this house.",
       trying_now:"This week has made it hard to ignore how little room there is once work gets hold of the day.",
       expecting:"This week has made it hard to ignore whether this already feels shared or whether it is still landing harder on me.",
       unsure:"This week has made it hard to ignore what kind of life you are actually building day to day.",
@@ -1900,6 +1954,42 @@ class Game {
     if (commuteSelect && partnerHasNoCommute) {
       commuteSelect.value = 'none';
     }
+    const children = document.getElementById('surv-children')?.value || '';
+    const familyPlanRow = document.getElementById('family-plan-row');
+    const familyPlanLabel = document.getElementById('family-plan-label');
+    const familyPlanSelect = document.getElementById('surv-family-plan');
+    if (familyPlanRow && familyPlanLabel && familyPlanSelect) {
+      let showFamilyPlan = false;
+      let label = '';
+      let options = '<option value="">Select...</option>';
+
+      if (['yes_young', 'yes_school', 'yes_teen'].includes(children)) {
+        showFamilyPlan = true;
+        label = 'And when it comes to another child?';
+        options += `
+          <option value="another_want">We would like another child</option>
+          <option value="another_unsure">We are not sure</option>
+          <option value="another_no">We are not planning another child</option>
+        `;
+      } else if (children === 'no_want') {
+        showFamilyPlan = true;
+        label = 'Which feels closer right now?';
+        options += `
+          <option value="want_not_trying">We would like a child, but we are not trying yet</option>
+          <option value="trying_now">We are actively trying</option>
+        `;
+      }
+
+      familyPlanRow.style.display = showFamilyPlan ? 'block' : 'none';
+      familyPlanLabel.textContent = label;
+      const previousValue = familyPlanSelect.value;
+      familyPlanSelect.innerHTML = options;
+      if (showFamilyPlan && previousValue && familyPlanSelect.querySelector(`option[value="${previousValue}"]`)) {
+        familyPlanSelect.value = previousValue;
+      } else if (!showFamilyPlan) {
+        familyPlanSelect.value = '';
+      }
+    }
     // Hide occupation/industry/WFH if player not employed
     const playerWfh = document.getElementById('surv-wfh')?.value || '';
     const workSection = document.getElementById('player-work-section');
@@ -2002,6 +2092,13 @@ class Game {
                 <option value="no_unsure">No, and not sure yet</option>
                 <option value="no_do_not_want">No, and do not want children</option>
               </select>
+
+              <div id="family-plan-row" style="display:none;margin-top:14px;">
+                <label class="label" id="family-plan-label">Which feels closer right now?</label>
+                <select id="surv-family-plan" onchange="game.updateAvatar()">
+                  <option value="">Select...</option>
+                </select>
+              </div>
             </div>
 
             <div class="card" id="player-work-section" style="margin-bottom:12px;transition:opacity 0.3s;">
@@ -2086,6 +2183,8 @@ class Game {
     set('surv-partner-wfh',       d.partnerWfh);
     set('surv-partner-commute',   this.partnerCommute);
     set('surv-children',         d.children);
+    this.updateSurveyVisibility();
+    set('surv-family-plan',      d.familyPlan);
     set('surv-industry',         d.industry);
     set('surv-occ',              d.occupation);
     set('surv-wfh',              d.wfh);
@@ -2135,6 +2234,7 @@ class Game {
       age:        document.getElementById('surv-age').value,
       education:  document.getElementById('surv-edu').value,
       children:   document.getElementById('surv-children').value,
+      familyPlan: document.getElementById('surv-family-plan')?.value || '',
       industry:   ind,
       occupation: occ,
       wfh,
@@ -2209,6 +2309,13 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
       'full-time,full_office':'Full-time, office', 'part_time':'Part-time', 'not_working':'Not employed'
     };
     const childDisplay = { 'yes_young':'Young children','yes_school':'School-age kids','yes_teen':'Older children','expecting':'Expecting','no_want':'Wants children','no_unsure':'Not sure yet','no_do_not_want':'No children' };
+    const familyPlanDisplay = {
+      another_want: 'Would like another child',
+      another_unsure: 'Not sure about another child',
+      another_no: 'Not planning another child',
+      want_not_trying: 'Would like a child, not trying yet',
+      trying_now: 'Actively trying'
+    };
     const indDisplay = { '1':'Agriculture/Energy','2':'Manufacturing','3':'Construction','4':'Retail/Hospitality','5':'Transport/Comms','6':'Finance','7':'Public Sector','8':'Education','9':'Health/Social Care','10':'Other Services' };
     const occDisplay = { '1':'Manager','2':'Professional','3':'Associate Prof.','4':'Admin','5':'Skilled Trades','6':'Personal Service','7':'Sales','8':'Operative','9':'Elementary' };
     const partnerWorkDisplay = wfhDisplay[d.partnerWfh] || (d.partnerWfh === 'na' ? 'Not employed' : '—');
@@ -2241,6 +2348,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
               ['Your WFH', wfhDisplay[d.wfh] || '—'],
               ['Partner WFH', partnerWorkDisplay],
               ['Family', childDisplay[d.children] || '—'],
+              ['Family plan', familyPlanDisplay[d.familyPlan] || '—'],
               ['Age', d.age || '—'],
               ['Education', d.education === 'degree' ? 'Degree+' : d.education ? 'A-level or lower' : '—'],
               ['Partner', this.partnerName || '—'],
@@ -2267,8 +2375,9 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
     let scenarios = Object.values(SCENARIO_DEFS);
     const age = this.surveyData?.age;
     const children = this.surveyData?.children;
+    const familyContext = this.getFamilyContext();
     // Hide Family Planning for 60+ or those who explicitly don't want children
-    if (age === '60+' || children === 'no_do_not_want') {
+    if (age === '60+' || children === 'no_do_not_want' || familyContext === 'no_family_plan') {
       scenarios = scenarios.filter(s => s.id !== 'family_planning');
     }
 
@@ -2292,7 +2401,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
         <div class="card">
           <button onclick="game.showProfile()" style="background:none;border:none;color:#888;font-size:13px;cursor:pointer;margin-bottom:10px;">← Back to profile</button>
           <h2>⚔️ Choose your quest</h2>
-          <p class="subtitle">Each scenario has 4 scenes. Pick one, make your choices, and watch the meters move.</p>
+          <p class="subtitle">Each scenario has 4 scenes. Pick one and see how the week plays out.</p>
           <p style="font-size:13px;color:#555;background:#f0f7ff;padding:10px 14px;border-radius:8px;margin-bottom:16px;border-left:3px solid #007AFF;">The first three scenarios are currently designed around a working father's experience in a heterosexual relationship, because the game is based on research evidence from those households. Future versions may expand to other family types as more evidence becomes available. The Employer scenario is more neutral.</p>
           <div class="scenario-grid">${cards}</div>
         </div>
@@ -2478,14 +2587,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
       mentalWorkSpillScore: 0,
       mentalCompromiseScore: 0,
       // Family context (derived from survey children field)
-      familyContext: (() => {
-        const c = this.surveyData?.children || '';
-        if (['yes_young','yes_school','yes_teen'].includes(c)) return 'another_child';
-        if (c === 'expecting') return 'expecting';
-        if (c === 'no_want') return 'first_child';
-        if (c === 'no_unsure') return 'unsure';
-        return 'unspecified';
-      })(),
+      familyContext: this.getFamilyContext(),
       partnerEmployment: (() => {
         const pw = this.surveyData?.partnerWfh || '';
         return (pw === 'na' || pw === 'not_working') ? 'not_employed' : 'working';
@@ -2541,7 +2643,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
       const hasYoungChild = children === 'yes_young';
       const wfhContext = isPartnerHome
         ? hasYoungChild
-          ? `{partnerName} has been managing childcare and work all day — you were supposed to take over at 4pm.`
+        ? `{partnerName} has been managing childcare and house stuff all day — you were supposed to take over at 4pm.`
           : `{partnerName} is home — but ${pSub} has ${pPoss} own things to manage today.`
         : hasYoungChild
           ? `{partnerName} has been WFH all day, but your child has been at nursery until 4pm.`
@@ -3282,7 +3384,7 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
   isFamilyIntimacyEligible() {
     if (this.scenarioType !== 'family_planning') return false;
     const path = this.storyState?.familyContext;
-    if (!['first_child', 'another_child', 'trying_now'].includes(path)) return false;
+    if (!['first_child', 'another_child', 'another_unsure', 'trying_now'].includes(path)) return false;
     return (this.storyState?.connectionScore || 0) >= 2
       && (this.storyState?.involvementScore || 0) >= 2
       && (this.storyState?.reliabilityScore || 0) >= 1
@@ -3295,10 +3397,10 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
     const path = this.storyState?.familyContext || 'unspecified';
     // If Monday created usable family time, use the shared-evening scene; otherwise
     // branch into a version where the house is already absorbing the earlier choice.
-    if (this.storyState?.familyWindowMode === 'family_first') return FAMILY_PLANNING_BRANCH.q2_open;
-    if (this.storyState?.familyWindowMode === 'both') return FAMILY_PLANNING_BRANCH.q2_open_both;
     if (path === 'expecting') return FAMILY_PLANNING_BRANCH.q2_closed_expecting;
     if (this.storyState?.partnerEmployment === 'not_employed') return FAMILY_PLANNING_BRANCH.q2_closed_homecare;
+    if (this.storyState?.familyWindowMode === 'family_first') return FAMILY_PLANNING_BRANCH.q2_open;
+    if (this.storyState?.familyWindowMode === 'both') return FAMILY_PLANNING_BRANCH.q2_open_both;
     return FAMILY_PLANNING_BRANCH.q2_closed_working;
   }
 
@@ -3311,7 +3413,8 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
   getFamilyQ4() {
     const path = this.storyState?.familyContext || 'unspecified';
     if (path === 'expecting') return FAMILY_PLANNING_BRANCH.q4_out_loud_expecting;
-    if (path === 'another_child') return FAMILY_PLANNING_BRANCH.q4_out_loud_parenting;
+    if (path === 'trying_now') return FAMILY_PLANNING_BRANCH.q4_out_loud_trying;
+    if (path === 'another_child' || path === 'another_unsure') return FAMILY_PLANNING_BRANCH.q4_out_loud_parenting;
     return FAMILY_PLANNING_BRANCH.q4_out_loud_building;
   }
 
@@ -3328,6 +3431,13 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
           desc: "Something shifted this week. Not in a dramatic way — in the practical places that usually decide everything. The load felt more shared. {partnerName}'s stress is manageable. Your work is not on fire. For the first time in a while, trying for another baby does not sound reckless. It still sounds hard, but possible."
         };
       }
+      if (path === 'another_unsure') {
+        return {
+          ...ending,
+          title: "Good Chance You Could Decide About Another Child Together",
+          desc: "You did not settle the whole question this week, but it felt less one-sided by the end of it. The load felt more shared. {partnerName}'s stress is manageable. Daily life felt steadier. That does not answer everything. It does make the question of another child feel more discussable together."
+        };
+      }
       if (path === 'unsure') {
         return {
           ...ending,
@@ -3339,7 +3449,7 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
         return {
           ...ending,
           title: "Good Chance You'll Handle The Baby Together",
-          desc: "The future is no longer hypothetical. The next chapter is already on its way. What changed this week was whether it felt like something {partnerName} would carry mostly alone. Her stress is manageable. The house feels more shared. Work did not win every room. That does not make what is coming easy. It does make it feel more possible together."
+          desc: "The future is no longer hypothetical. The next chapter is already on its way. What changed this week was whether it felt like something {partnerName} would carry mostly alone. Her stress is manageable. The house feels more shared. Work did not take over the whole house. That does not make what is coming easy. It does make it feel more possible together."
         };
       }
       return {
@@ -3353,11 +3463,18 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
       if (path === 'another_child') {
         return ending;
       }
+      if (path === 'another_unsure') {
+        return {
+          ...ending,
+          title: "Another Child Felt Too Heavy To Think About",
+          desc: "Her stress hit {her_stress}%. Whatever the two of you thought before, this week made another child feel heavier, not clearer. Too much kept landing on her. In that tiredness, the question stopped feeling open and started feeling like too much."
+        };
+      }
       if (path === 'expecting') {
         return {
           ...ending,
           title: "The Future Already Feels Heavy",
-          desc: "Her stress hit {her_stress}%. The week had moments, but the baby never felt held by the way daily life was working. Work kept intruding. The load kept defaulting. Instead of feeling steadier about what is coming, {partnerName} felt more alone in getting ready for the baby. The problem was not love. It was capacity."
+          desc: "Her stress hit {her_stress}%. The week had moments, but daily life never felt steady enough to hold the baby. Work kept intruding. The load kept defaulting. Instead of feeling steadier about what is coming, {partnerName} felt more alone in getting ready for the baby. The problem was not love. It was capacity."
         };
       }
       return {
@@ -3372,27 +3489,34 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
         return {
           ...ending,
           title: "Another Child Felt Further Away",
-        desc: "Shared direction fell to {alignment}%. Nothing exploded this week. But the pattern stayed the same: work first, family after, home left to absorb what was left. That is why trying for another baby did not feel closer by the end of the week."
+        desc: "Shared direction fell to {alignment}%. Nothing exploded this week. But the pattern stayed the same: work first, family after, home kept picking up the slack. That is why trying for another baby did not feel closer by the end of the week."
+        };
+      }
+      if (path === 'another_unsure') {
+        return {
+          ...ending,
+          title: "Still Not Sure About Another Child",
+        desc: "Shared direction fell to {alignment}%. Nothing exploded this week. But the pattern stayed the same: work first, family after, home kept picking up the slack. That is why the question of another child still did not feel like something you were working out together."
         };
       }
       if (path === 'unsure') {
         return {
           ...ending,
           title: "Low Chance You'd Decide To Have A Child Right Now",
-        desc: "Shared direction fell to {alignment}%. Nothing exploded this week. But the pattern stayed the same: work first, family after, home left to absorb what was left. That is why having a child still does not feel like something you are working out together."
+        desc: "Shared direction fell to {alignment}%. Nothing exploded this week. But the pattern stayed the same: work first, family after, home kept picking up the slack. That is why having a child still does not feel like something you are working out together."
         };
       }
       if (path === 'expecting') {
         return {
           ...ending,
           title: "Low Chance You'll Be Ready Together",
-        desc: "Shared direction fell to {alignment}%. Nothing exploded this week. But the pattern stayed the same: work first, family after, home left to absorb what was left. That is why the baby still feels like something landing on the household more than something the two of you are preparing for together."
+        desc: "Shared direction fell to {alignment}%. Nothing exploded this week. But the pattern stayed the same: work first, family after, home kept picking up the slack. That is why the baby still feels like something landing on the household more than something the two of you are preparing for together."
         };
       }
       return {
         ...ending,
         title: "Low Chance You'd Try For A Baby Right Now",
-        desc: "Shared direction fell to {alignment}%. Nothing exploded this week. But the pattern stayed the same: work first, family after, home left to absorb what was left. That is why trying for a baby did not feel more possible by the end of the week."
+        desc: "Shared direction fell to {alignment}%. Nothing exploded this week. But the pattern stayed the same: work first, family after, home kept picking up the slack. That is why trying for a baby did not feel more possible by the end of the week."
       };
     }
 
@@ -3402,6 +3526,13 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
           ...ending,
           title: "Maybe, But Not Ready To Try For Another Baby Yet",
           desc: "The week felt better in places. But another baby still does not feel straightforward. Shared direction reached {alignment}%. There are some signs this could work, but not enough to feel confident about trying yet."
+        };
+      }
+      if (path === 'another_unsure') {
+        return {
+          ...ending,
+          title: "Maybe, But Still Not Sure About Another Child",
+          desc: "The week felt better in places. Another child does not feel out of the question, but it does not feel simple either. Shared direction reached {alignment}%. Some things got easier. The bigger question still is not settled."
         };
       }
       if (path === 'unsure') {
@@ -3791,7 +3922,7 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
 
           ${ending.insight ? `
             <div style="background:#f0f7ff;border-left:4px solid #007AFF;padding:14px 16px;border-radius:0 8px 8px 0;margin-bottom:20px;">
-              <p style="font-size:11px;color:#007AFF;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Research context</p>
+              <p style="font-size:11px;color:#007AFF;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Why this matters</p>
               <p style="font-size:13px;color:#444;line-height:1.5;">${ending.insight}</p>
             </div>
           ` : ''}
@@ -3831,7 +3962,7 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
       fp_1:'Monday appointment', fp_2:'Tuesday evening load', fp_3:'Thursday private time', fp_4:'Friday lunch break',
       fp_2_closed_working:'Tuesday evening load', fp_2_closed_homecare:'Tuesday evening load', fp_2_closed_expecting:'Tuesday evening load', fp_2_open:'Tuesday evening load', fp_2_open_both:'Tuesday evening load',
       fp_3_private_drift:'Thursday private time', fp_3_private_recognition:'Thursday private time',
-      fp_4_out_loud_building:'Friday lunch break', fp_4_out_loud_expecting:'Friday lunch break', fp_4_out_loud_parenting:'Friday lunch break',
+      fp_4_out_loud_building:'Friday lunch break', fp_4_out_loud_trying:'Friday lunch break', fp_4_out_loud_expecting:'Friday lunch break', fp_4_out_loud_parenting:'Friday lunch break',
       mh_1:'Monday evening', mh_2:'Wednesday morning', mh_3:'Thursday office change', mh_3_monitoring:'Thursday work pressure', mh_3_monitoring_no_child:'Thursday work pressure', mh_4:'Friday switch-off',
       dl_1:'Monday break', dl_2:'Tuesday expectations', dl_3:'Workspace question', dl_4:'Friday noticing',
       emp_1:'Initial WFH request', emp_2:'Responsiveness creep', emp_3:'Project staffing', emp_4:'Annual review',
@@ -3867,13 +3998,13 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
       <div class="screen active">
         <div class="card">
           <h3>One last thing</h3>
-          <p class="subtitle" style="margin-bottom:20px;">These questions feed directly into the research. Takes 2–3 minutes.</p>
+          <p class="subtitle" style="margin-bottom:20px;">Your answers go straight into the research. This takes about 2–3 minutes.</p>
 
           ${likert5('post_realism', 'Overall, how realistic did these situations feel?', 'Not realistic at all', 'Completely realistic')}
         </div>
 
         <div class="card">
-          <h3 style="margin-bottom:4px;">Your choices — IRL</h3>
+          <h3 style="margin-bottom:4px;">Your choices in real life</h3>
           <p style="font-size:13px;color:#888;margin-bottom:16px;">For each choice you made, would you do the same in real life?</p>
           ${choiceRows}
         </div>
@@ -3881,7 +4012,7 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
         <div class="card">
           <h3 style="margin-bottom:14px;">Reflection</h3>
 
-          <label class="label">Did you play as yourself or more as a hypothetical person?</label>
+          <label class="label">Did you play mostly as yourself, or as someone more hypothetical?</label>
           <select id="post_played_as" style="margin-bottom:16px;">
             <option value="">Select...</option>
             <option value="self">Mostly as myself</option>
@@ -3889,7 +4020,7 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
             <option value="hypothetical">Mostly as a hypothetical person</option>
           </select>
 
-          <label class="label">What were you mainly trying to keep hold of?</label>
+          <label class="label">What mattered most to you?</label>
           <select id="post_main_focus" style="margin-bottom:16px;">
             <option value="">Select...</option>
             ${this.scenarioType === 'employer' ? `
@@ -3927,7 +4058,7 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
             ${realisticOptions}
           </select>
 
-          <label class="label">If you'd choose differently IRL, what would change your choice? (optional)</label>
+          <label class="label">If you'd choose differently in real life, what would change your choice? (optional)</label>
           <textarea id="post_irl_different" placeholder="e.g. my manager wouldn't be so understanding, we don't have childcare issues..." style="width:100%;padding:12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;min-height:70px;resize:vertical;margin-bottom:16px;"></textarea>
 
           <label class="label">What surprised you most about your own choices? (optional)</label>
@@ -4005,11 +4136,11 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
           </div>
 
           <div style="background:#f8f8f8;border-radius:10px;padding:14px;margin-bottom:18px;">
-            <p style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;">You said you were mainly trying to keep hold of</p>
+            <p style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;">What mattered most to you</p>
             <p style="font-size:15px;">${mainFocus}</p>
           </div>
 
-          <p style="font-size:13px;color:#666;line-height:1.5;margin-bottom:18px;">The game still judged the week using several hidden dimensions at once, not just one. That is why the final result may not line up neatly with the one thing you were most focused on.</p>
+          <p style="font-size:13px;color:#666;line-height:1.5;margin-bottom:18px;">The result reflects several things at once, not just the one you focused on most. That is why the ending may not line up neatly with the single thing you cared about most.</p>
 
           <button class="btn btn-primary" onclick="game.showData()">View raw data →</button>
           <button class="btn btn-secondary" style="margin-top:8px;" onclick="game.showScenarioSelect()">Back to scenarios</button>
@@ -4045,7 +4176,7 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
       <div class="screen active">
         <div class="card">
           <h3>Collected Data</h3>
-          <p class="subtitle">In production, this would be sent to a research database automatically.</p>
+          <p class="subtitle">In the live version, this would be sent straight to the research database.</p>
           <pre style="background: #f5f5f5; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 12px;">${dataJson}</pre>
           <button class="btn btn-primary" onclick="game.showScenarioSelect()">← Back to scenarios</button>
         </div>
