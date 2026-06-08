@@ -667,31 +667,31 @@ const SCENARIOS = {
       id: "fp_1",
       day: "Monday",
       time: "8:40am",
-      sceneText: "You planned to work from home today and go with {partnerName} to {familyAppointment} at lunchtime. At 8:40, your manager messages the team: 'I'm in the office today if anyone wants to come in.'",
-      context: "The appointment is planned last week. Your manager is in the office today. You could go in, or stay home as planned.",
+      sceneText: "You planned to work from home today and go with {partnerName} to {familyAppointment} at lunchtime. At 8:40, your manager messages the team: 'I'm in the office today if anyone wants to come in. Need a couple of people here before lunch to go through yesterday's handover notes.'",
+      context: "The appointment was booked last week. The handover can be done from home, but it will be more visible if you show up in person.",
       choices: [
         {
           id: "A",
           main: "Go into the office and tell {partnerName} you will make the next one.",
-          effects: { relationship: -10, alignment: -12, her_stress: +12, career: +8 },
+          effects: { relationship: -10, alignment: -12, her_stress: +12, career: +10 },
           signal: "She says 'Okay' too quickly when you tell her. By lunchtime, you message from work, but she does not reply.",
-          accumulation: "Nothing dramatic happened. Work just took priority when it mattered.",
+          accumulation: "You were seen in the office. She went without you.",
           storySignal: { connection: 0, avoidance: 1, repair: 0, workIntrusion: 2, involvement: 0, reliability: 0 }
         },
         {
           id: "B",
           main: "Message your manager that you are working from home because you have {familyAppointment} at lunch.",
-          effects: { relationship: +12, alignment: +10, her_stress: -8, career: -6 },
+          effects: { relationship: +12, alignment: +10, her_stress: -8, career: -8 },
           signal: "When you tell her you are staying home, some of the tension goes out of her face. Later, you leave together instead of one of you going alone.",
-          accumulation: "You treated the family plan like something real, not something work could always displace.",
+          accumulation: "You kept the plan, but you also made yourself visible as the one not in the room.",
           storySignal: { connection: 2, avoidance: 0, repair: 0, workIntrusion: 0, involvement: 0, reliability: 0 }
         },
         {
           id: "C",
-          main: "Message your manager that you are working from home, but don't mention the {familyAppointment}.",
-          effects: { relationship: +2, alignment: -2, her_stress: +3, career: +3 },
-          signal: "You keep the plan, but spend the morning half-watching the clock and half-watching Teams. By the time you leave, work is still sitting on your shoulders.",
-          accumulation: "This is the working-from-home compromise: you are technically there, but work keeps part of you.",
+          main: "Stay home, say you will cover the handover notes from there, and don't mention the {familyAppointment}.",
+          effects: { relationship: +3, alignment: -1, her_stress: +2, career: +4 },
+          signal: "You keep the plan, but spend the morning proving you are still fully on it. By the time you leave, work is still sitting on your shoulders.",
+          accumulation: "You stayed home, but you spent the morning paying for it.",
           storySignal: { connection: 0, avoidance: 0, repair: 0, workIntrusion: 1, involvement: 0, reliability: 1 }
         }
       ]
@@ -1257,8 +1257,8 @@ const FAMILY_PLANNING_BRANCH = {
     sceneText: "Tuesday, 3:20pm. Your next call is not until 4. This morning {partnerName} said she felt like the whole week was piling up on her side. The breakfast dishes are still there, dinner has not been thought about, and your manager pings: 'Any chance you can review the draft before EOD? Just 20 minutes.' You look at the message. You look at the clock.",
     context: "The dishes are still there. Dinner still needs sorting. Your manager wants the draft before the end of the day.",
     choices: [
-      { id: "A", main: "Reply immediately: \"On it now.\" Use the free half hour for work." , effects: { relationship: -10, her_stress: +12, alignment: -8, career: +8 }, signal: "You sent the review in 22 minutes. Your manager replied: 'Cheers.' {partnerName} got on with dinner and the rest of the evening without you.", accumulation: "You were home, but you used the spare time the same way you would have in the office.", storySignal: { connection: 0, avoidance: 1, workIntrusion: 2, involvement: 0, reliability: -1, repair: 0 } },
-      { id: "B", main: "\"I'll send it by 4:30.\" Then use the free half hour at home first." , effects: { relationship: +15, her_stress: -12, alignment: +12, career: -6 }, signal: "{partnerName} looked up, surprised you were there. 'I thought you were in meetings.' You cleared the dishes, got dinner started, and the 4:30 reply still held.", accumulation: "You used the time at home as home-time, not as borrowed office time.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 2, reliability: 1, repair: 0 } }
+      { id: "A", main: "Reply immediately: \"On it now.\" Use the free half hour for work." , effects: { relationship: -10, her_stress: +12, alignment: -8, career: +8 }, signal: "You sent the review in 22 minutes. Your manager replied: 'Cheers.' {partnerName} got on with dinner and the rest of the evening without you.", accumulation: "You stayed at your desk. Dinner and the rest of the evening carried on without you.", storySignal: { connection: 0, avoidance: 1, workIntrusion: 2, involvement: 0, reliability: -1, repair: 0 } },
+      { id: "B", main: "\"I can get it back later.\" Then use the free half hour at home first." , effects: { relationship: +13, her_stress: -11, alignment: +11, career: -9 }, signal: "{partnerName} looked up, surprised you were there. 'I thought you were in meetings.' You cleared the dishes and got dinner moving, but by the time you went back upstairs the review was still sitting there waiting on you.", accumulation: "The dishes were done. The work reply became the thing hanging over the rest of the afternoon.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 2, reliability: 0, repair: 0 } }
     ]
   },
 
@@ -1269,8 +1269,20 @@ const FAMILY_PLANNING_BRANCH = {
     sceneText: "Tuesday, 3:20pm. Your next call is not until 4. {partnerName} has been managing the kids and the house since morning. The breakfast dishes are still there, one child still needs sorting for tomorrow, and your manager pings: 'Any chance you can review the draft before EOD? Just 20 minutes.' You look at the message. You look at the clock.",
     context: "The dishes are still there. One child still needs sorting for tomorrow. Your manager wants the draft before the end of the day.",
     choices: [
-      { id: "A", main: "Reply immediately: \"On it now.\" Use the free half hour for work." , effects: { relationship: -10, her_stress: +12, alignment: -8, career: +8 }, signal: "You sent the review in 22 minutes. Downstairs, nothing changed. The load stayed where it was.", accumulation: "You were home, but you used the spare time the same way you would have in the office.", storySignal: { connection: 0, avoidance: 1, workIntrusion: 2, involvement: 0, reliability: -1, repair: 0 } },
-      { id: "B", main: "\"I'll send it by 4:30.\" Then use the free half hour at home first." , effects: { relationship: +15, her_stress: -12, alignment: +12, career: -6 }, signal: "She looked up when you appeared. 'You're not on calls?' You sorted the kitchen and helped with what still needed doing. The 4:30 reply held.", accumulation: "It is not dramatic. It is exactly the kind of thing that changes what being home means.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 2, reliability: 1, repair: 0 } }
+      { id: "A", main: "Reply immediately: \"On it now.\" Use the free half hour for work." , effects: { relationship: -10, her_stress: +12, alignment: -8, career: +8 }, signal: "You sent the review in 22 minutes. Downstairs, nothing changed. The load stayed where it was.", accumulation: "The message went back. The kitchen stayed as it was.", storySignal: { connection: 0, avoidance: 1, workIntrusion: 2, involvement: 0, reliability: -1, repair: 0 } },
+      { id: "B", main: "\"I can get it back later.\" Use the free half hour on the kitchen and what still needs doing for tomorrow." , effects: { relationship: +13, her_stress: -11, alignment: +11, career: -9 }, signal: "She looked up when you appeared. 'You're not on calls?' You sorted the kitchen and helped with what still needed doing. By the time you got back upstairs, the review was no longer a quick favour.", accumulation: "The kitchen got sorted. The work reply became the thing waiting on you.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 2, reliability: 0, repair: 0 } }
+    ]
+  },
+
+  q2_closed_home_no_children: {
+    id: "fp_2_closed_home_no_children",
+    day: "Tuesday",
+    time: "3:20pm",
+    sceneText: "Tuesday, 3:20pm. Your next call is not until 4. {partnerName} has been at home all day. The breakfast dishes are still there, dinner has not been thought about, and one bit of life-admin is still sitting there waiting to be done. Your manager pings: 'Any chance you can review the draft before EOD? Just 20 minutes.' You look at the message. You look at the clock.",
+    context: "The dishes are still there. Dinner still needs sorting. One home job is still waiting. Your manager wants the draft before the end of the day.",
+    choices: [
+      { id: "A", main: "Reply immediately: \"On it now.\" Use the free half hour for work." , effects: { relationship: -10, her_stress: +10, alignment: -8, career: +8 }, signal: "You sent the review in 22 minutes. Downstairs, nothing changed. The afternoon still felt like it was hers to keep moving.", accumulation: "The message went back. The house stayed as it was.", storySignal: { connection: 0, avoidance: 1, workIntrusion: 2, involvement: 0, reliability: -1, repair: 0 } },
+      { id: "B", main: "\"I can get it back later.\" Use the free half hour on the kitchen and the home job that is still hanging there." , effects: { relationship: +12, her_stress: -9, alignment: +10, career: -9 }, signal: "She looked up when you appeared. You dealt with what was right in front of you, and one more thing stopped sitting in the background. When you went back upstairs, the review was still waiting.", accumulation: "You shifted some of the afternoon at home. The work reply became your problem for later.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 2, reliability: 0, repair: 0 } }
     ]
   },
 
@@ -1281,9 +1293,9 @@ const FAMILY_PLANNING_BRANCH = {
     sceneText: "Tuesday, 3:20pm. Your next call is not until 4. {partnerName} has just come into the kitchen. The breakfast things are still by the sink. The antenatal appointment on Thursday is on both your minds. The car service still needs booking. Your phone buzzes: your manager asking if you can turn around comments on the draft before the end of the day. Just 20 minutes, they say.",
     context: "The dishes are still there. The car still needs booking. Your manager wants the draft back before the end of the day.",
     choices: [
-      { id: "A", main: "Reply immediately: \"On it now.\" Use the free half hour for work." , effects: { relationship: -10, her_stress: +12, alignment: -8, career: +8 }, signal: "You sent the review in 22 minutes. She got the car booking sorted herself. By the end of the afternoon, it still felt like the bigger list was sitting with her.", accumulation: "It did not come down to one big row. It came down to her still carrying more of what was coming.", storySignal: { connection: 0, avoidance: 1, workIntrusion: 2, involvement: 0, reliability: -1, repair: 0 } },
-      { id: "B", main: "\"I'll send it by 4:30.\" Use the free half hour for the kitchen and the obvious routine jobs first." , effects: { relationship: +10, her_stress: -8, alignment: +8, career: -5 }, signal: "She looks up when you start clearing the kitchen without being asked. The dishes are done and dinner is less of a question before you go back to work.", accumulation: "You dealt with what was right in front of you. It helped, but the longer list was still there.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 1, reliability: 1, repair: 0 } },
-      { id: "C", main: "\"I'll send it by 4:30.\" Use the free half hour to sort the car service and Thursday admin first." , effects: { relationship: +12, her_stress: -10, alignment: +10, career: -6 }, signal: "She notices you are taking on the things that usually stay in her head. The kitchen is still messy, but one of the background jobs is no longer hers to remember.", accumulation: "You did not just help in the room. You took something off the list she was still carrying.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 2, reliability: 1, repair: 0 } }
+      { id: "A", main: "Reply immediately: \"On it now.\" Use the free half hour for work." , effects: { relationship: -10, her_stress: +12, alignment: -8, career: +8 }, signal: "You sent the review in 22 minutes. She got the car booking sorted herself. By the end of the afternoon, it still felt like the bigger list was sitting with her.", accumulation: "The reply went back. The car booking still sat with her.", storySignal: { connection: 0, avoidance: 1, workIntrusion: 2, involvement: 0, reliability: -1, repair: 0 } },
+      { id: "B", main: "\"I can get it back later.\" Use the free half hour for the kitchen and the obvious routine jobs first." , effects: { relationship: +9, her_stress: -7, alignment: +7, career: -8 }, signal: "She looks up when you start clearing the kitchen without being asked. The dishes are done and dinner is less of a question, but the review is still there when you go back upstairs.", accumulation: "The kitchen was sorted. The work reply was still waiting on you.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 1, reliability: 0, repair: 0 } },
+      { id: "C", main: "\"I can get it back later.\" Use the free half hour to sort the car service and Thursday admin first." , effects: { relationship: +12, her_stress: -10, alignment: +10, career: -9 }, signal: "She notices you are taking on the things that usually stay in her head. The kitchen is still messy, but one of the background jobs is no longer hers to remember. When you go back upstairs, the review is still sitting there.", accumulation: "The car service got booked. The work reply was still your problem for later.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 2, reliability: 0, repair: 0 } }
     ]
   },
 
@@ -1294,8 +1306,8 @@ const FAMILY_PLANNING_BRANCH = {
     sceneText: "Tuesday, 6:20pm. It is not as tense as yesterday, but it is not fully okay either. The dishes are still there, dinner still needs sorting, and you still have one last work task that would take about 15 minutes to finish.",
     context: "The dishes are still there. Dinner still needs sorting. The task could be finished now or left until later.",
     choices: [
-      { id: "A", main: "Finish the last task first, then come back and deal with the kitchen properly." , effects: { relationship: -8, her_stress: +6, alignment: -8, career: +4 }, signal: "She nods, but she does not look very happy. By the time you come back, the evening has moved on a bit.", accumulation: "Yesterday only mattered if it changed what today looked like.", storySignal: { connection: 0, avoidance: 1, workIntrusion: 1, involvement: 0, reliability: -1, repair: 0 } },
-      { id: "B", main: "Leave the task until later and start dealing with the dishes, dinner, or tomorrow's prep now." , effects: { relationship: +12, her_stress: -10, alignment: +12, career: -4 }, signal: "She watches you get on with the evening without being asked. It does not fix everything, but it changes the room.", accumulation: "Yesterday helped. Tonight makes it look less like a one-off.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 2, reliability: 1, repair: 1 } }
+      { id: "A", main: "Finish the last task first, then come back and deal with the kitchen properly." , effects: { relationship: -8, her_stress: +6, alignment: -8, career: +4 }, signal: "She nods, but she does not look very happy. By the time you come back, the evening has moved on a bit.", accumulation: "By the time you came back, she had already moved the evening on.", storySignal: { connection: 0, avoidance: 1, workIntrusion: 1, involvement: 0, reliability: -1, repair: 0 } },
+      { id: "B", main: "Leave the task until later and start dealing with the dishes, dinner, or tomorrow's prep now." , effects: { relationship: +12, her_stress: -10, alignment: +12, career: -7 }, signal: "She watches you get on with the evening without being asked. It does not fix everything, but it changes the room. The task is still waiting when the house finally quiets down.", accumulation: "You were already in the kitchen before she had to ask. The work task followed you into later.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 2, reliability: 0, repair: 1 } }
     ]
   },
 
@@ -1306,8 +1318,8 @@ const FAMILY_PLANNING_BRANCH = {
     sceneText: "Tuesday, 6:20pm. Yesterday you made the appointment work, but you were still checking work around it. Tonight the dishes are still there, dinner still needs sorting, and one last work task is still hanging over the evening.",
     context: "The dishes are still there. Dinner still needs sorting. The task is still sitting in the background.",
     choices: [
-      { id: "A", main: "Finish the last task first, then come back and deal with the kitchen properly." , effects: { relationship: -10, her_stress: +8, alignment: -10, career: +4 }, signal: "By the time you come back, she has already got on with the evening. It feels different from a few minutes earlier.", accumulation: "Trying to do both only helped if work actually stopped at some point.", storySignal: { connection: 0, avoidance: 1, workIntrusion: 2, involvement: 0, reliability: -1, repair: 0 } },
-      { id: "B", main: "Leave the task until later and start dealing with the dishes, dinner, or tomorrow's prep now." , effects: { relationship: +8, her_stress: -8, alignment: +8, career: -4 }, signal: "She notices you are properly there this time. It does not erase yesterday's split attention, but it keeps it from becoming the pattern.", accumulation: "You could still pull the evening back, but only by choosing one side of the split.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 2, reliability: 1, repair: 1 } }
+      { id: "A", main: "Finish the last task first, then come back and deal with the kitchen properly." , effects: { relationship: -10, her_stress: +8, alignment: -10, career: +4 }, signal: "By the time you come back, she has already got on with the evening. It feels different from a few minutes earlier.", accumulation: "You came back to an evening that had already moved on without you.", storySignal: { connection: 0, avoidance: 1, workIntrusion: 2, involvement: 0, reliability: -1, repair: 0 } },
+      { id: "B", main: "Leave the task until later and start dealing with the dishes, dinner, or tomorrow's prep now." , effects: { relationship: +8, her_stress: -8, alignment: +8, career: -7 }, signal: "She notices you are properly there this time. It does not erase yesterday's split attention, but it keeps it from becoming the pattern. The task is still hanging there once the evening settles.", accumulation: "You left the task and got on with the evening instead. Work was still waiting later.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 2, reliability: 0, repair: 1 } }
     ]
   },
 
@@ -1320,9 +1332,9 @@ const FAMILY_PLANNING_BRANCH = {
     sceneText: "Thursday night. The house is finally quiet. You finally have time alone together. {partnerName} comes closer, clearly in the mood. Then your phone lights up with a work message.",
     context: "It is late. The message may not need an answer tonight. You still have to decide what gets your attention first.",
     choices: [
-      { id: "A", main: "\"Give me a second — let me check this.\"" , effects: { relationship: -20, her_stress: +12, alignment: -12, career: +5 }, signal: "Her face changes before she looks away. By the time you put the phone down, she is not in the mood anymore.", accumulation: "Being home did not matter much if work could still claim you first.", storySignal: { connection: 0, avoidance: 1, workIntrusion: 2, involvement: 0, reliability: -1, repair: 0 } },
-      { id: "B", main: "Put the phone away and tell her work can wait, but she can't." , effects: { relationship: +15, her_stress: -8, alignment: +12, career: -4 }, signal: "She notices you put the phone down and leave it there. The moment does not get interrupted this time, and the two of you end up having a good night together.", accumulation: "You could not fix the whole week. But you did not let work take this too.", storySignal: { connection: 2, avoidance: 0, workIntrusion: 0, involvement: 0, reliability: 1, repair: 1 } },
-      { id: "C", main: "Stay beside her but answer the message while you are there." , effects: { relationship: +1, her_stress: +2, alignment: -2, career: +2 }, signal: "You are physically there, but your eyes keep dropping to the screen. After a minute, she stops leaning into you.", accumulation: "This is the working-from-home compromise in miniature: you stay in the room, but work still gets your attention.", storySignal: { connection: 0, avoidance: 0, workIntrusion: 1, involvement: 0, reliability: 1, repair: 0 } }
+      { id: "A", main: "\"Give me a second — let me check this.\"" , effects: { relationship: -20, her_stress: +12, alignment: -12, career: +5 }, signal: "Her face changes before she looks away. By the time you put the phone down, she is not in the mood anymore.", accumulation: "You checked the message. The moment was gone by the time you looked up again.", storySignal: { connection: 0, avoidance: 1, workIntrusion: 2, involvement: 0, reliability: -1, repair: 0 } },
+      { id: "B", main: "Put the phone away and tell her work can wait, but she can't." , effects: { relationship: +15, her_stress: -8, alignment: +12, career: -4 }, signal: "She notices you put the phone down and leave it there. The moment does not get interrupted this time, and the two of you end up having a good night together.", accumulation: "The phone stayed where it was. So did you.", storySignal: { connection: 2, avoidance: 0, workIntrusion: 0, involvement: 0, reliability: 1, repair: 1 } },
+      { id: "C", main: "Send a one-line reply saying you will deal with it first thing, then put the phone away." , effects: { relationship: +7, her_stress: -2, alignment: +4, career: +1 }, signal: "You send the shortest possible reply and turn the phone face down. It is not as clean as ignoring it completely, but the message does not take over the room.", accumulation: "Work got an answer. The rest of the moment still belonged to the two of you.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 1, involvement: 0, reliability: 1, repair: 1 } }
     ]
   },
 
@@ -1333,9 +1345,9 @@ const FAMILY_PLANNING_BRANCH = {
     sceneText: "Thursday night. The house is finally quiet. You finally have time alone together. {partnerName} comes closer, clearly in the mood. Then your phone lights up with a work message.",
     context: "It is late. The message may not need an answer tonight. You still have to decide what gets your attention first.",
     choices: [
-      { id: "A", main: "\"Give me a second — let me check this.\"" , effects: { relationship: -20, her_stress: +12, alignment: -12, career: +5 }, signal: "Her face changes before she looks away. By the time you put the phone down, she is not in the mood anymore.", accumulation: "Moments like this are where old patterns come back.", storySignal: { connection: 0, avoidance: 1, workIntrusion: 2, involvement: 0, reliability: -1, repair: 0 } },
-      { id: "B", main: "Put the phone away and tell her work can wait, but she can't." , effects: { relationship: +15, her_stress: -8, alignment: +12, career: -4 }, signal: "She notices you put the phone down and leave it there. The moment does not get interrupted this time, and the two of you end up having a good night together.", accumulation: "What changed was simple: you stayed in the moment instead of letting work back in.", storySignal: { connection: 2, avoidance: 0, workIntrusion: 0, involvement: 0, reliability: 1, repair: 1 } },
-      { id: "C", main: "Stay beside her but answer the message while you are there." , effects: { relationship: +1, her_stress: +2, alignment: -2, career: +2 }, signal: "You are physically there, but the screen keeps pulling your attention away. She notices that too.", accumulation: "It still ends up feeling like work got the better version of you.", storySignal: { connection: 0, avoidance: 0, workIntrusion: 1, involvement: 0, reliability: 1, repair: 0 } }
+      { id: "A", main: "\"Give me a second — let me check this.\"" , effects: { relationship: -20, her_stress: +12, alignment: -12, career: +5 }, signal: "Her face changes before she looks away. By the time you put the phone down, she is not in the mood anymore.", accumulation: "You looked at the phone. The moment went with it.", storySignal: { connection: 0, avoidance: 1, workIntrusion: 2, involvement: 0, reliability: -1, repair: 0 } },
+      { id: "B", main: "Put the phone away and tell her work can wait, but she can't." , effects: { relationship: +15, her_stress: -8, alignment: +12, career: -4 }, signal: "She notices you put the phone down and leave it there. The moment does not get interrupted this time, and the two of you end up having a good night together.", accumulation: "You stayed with her and left the message alone.", storySignal: { connection: 2, avoidance: 0, workIntrusion: 0, involvement: 0, reliability: 1, repair: 1 } },
+      { id: "C", main: "Send a one-line reply saying you will deal with it first thing, then put the phone away." , effects: { relationship: +7, her_stress: -2, alignment: +4, career: +1 }, signal: "You send the shortest possible reply and turn the phone face down. She notices the difference between that and disappearing into it.", accumulation: "Work got an answer. The moment stayed mostly intact.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 1, involvement: 0, reliability: 1, repair: 1 } }
     ]
   },
 
@@ -1345,12 +1357,12 @@ const FAMILY_PLANNING_BRANCH = {
     id: "fp_4_out_loud_building",
     day: "Friday",
     time: "12:40pm",
-    sceneText: "Friday, 12:40pm. You are on your lunch break. You could use it to finish a work task that would clear your afternoon a bit. Or you could use it to make the call and fill in the form you said you would sort, so it is not still sitting there when lunch ends.",
-    context: "Your break is about 20 minutes. You can use it for work, use it for the family task, or actually take the break and leave both until later.",
+    sceneText: "Friday, 12:40pm. You are on your lunch break. A work task would clear your afternoon a bit if you finish it now. The breakfast things are still by the sink. And the call and form you said you would sort are still hanging there too.",
+    context: "Your break is about 20 minutes. You have time to do one thing properly: the work task, the kitchen, or the call and form.",
     choices: [
-      { id: "A", main: "Use the break to finish the work task and keep the afternoon clearer." , effects: { relationship: -6, her_stress: +4, alignment: -6, career: +5 }, signal: "You finish the task and feel more on top of work. The follow-up is still waiting when the afternoon starts.", accumulation: "Nothing dramatic happened. Work just used the loose space first.", storySignal: { connection: 0, avoidance: 0, workIntrusion: 1, involvement: 0, reliability: 0, repair: 0 } },
-      { id: "B", main: "Use the break to make the call and fill in the form you said you would sort, and leave the work task until later." , effects: { relationship: +8, her_stress: -6, alignment: +8, career: -4 }, signal: "{partnerName} notices before saying anything. The afternoon does not become easy, but one thing is no longer hanging over both of you.", accumulation: "It was only part of a lunch break. It still changed what being home meant.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 1, reliability: 1, repair: 0 } },
-      { id: "C", main: "Use the break to eat properly and clear your head. Leave both jobs until later." , effects: { relationship: +1, her_stress: +2, alignment: -1, career: -2 }, signal: "You feel a bit more human by the end of lunch. Both jobs are still waiting for you when the afternoon starts.", accumulation: "The break helped you. It did not take either job off the list.", storySignal: { connection: 0, avoidance: 0, workIntrusion: 0, involvement: 0, reliability: 0, repair: 0 } }
+      { id: "A", main: "Use the break to finish the work task and keep the afternoon clearer." , effects: { relationship: -6, her_stress: +4, alignment: -6, career: +5 }, signal: "You finish the task and feel more on top of work. The follow-up is still waiting when the afternoon starts.", accumulation: "The work task was done. The follow-up was still waiting.", storySignal: { connection: 0, avoidance: 0, workIntrusion: 1, involvement: 0, reliability: 0, repair: 0 } },
+      { id: "B", main: "Use the break to clear the breakfast things and straighten the kitchen, then leave the rest for later." , effects: { relationship: +5, her_stress: -4, alignment: +4, career: -3 }, signal: "The kitchen looks better by the time lunch ends. It helps, but the call and form are still hanging there in the background.", accumulation: "The kitchen was sorted. The call and form still had your name on them.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 1, reliability: 0, repair: 0 } },
+      { id: "C", main: "Use the break to make the call and fill in the form you said you would sort, and leave the work task until later." , effects: { relationship: +8, her_stress: -6, alignment: +8, career: -4 }, signal: "{partnerName} notices before saying anything. The afternoon does not become easy, but one thing is no longer hanging over both of you.", accumulation: "The call was made. The work task was still there for later.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 2, reliability: 1, repair: 0 } }
     ]
   },
 
@@ -1358,12 +1370,12 @@ const FAMILY_PLANNING_BRANCH = {
     id: "fp_4_out_loud_trying",
     day: "Friday",
     time: "12:40pm",
-    sceneText: "Friday, 12:40pm. You are on your lunch break. You could use it to finish a work task that would clear your afternoon a bit. Or you could use it to call the clinic back and sort out the follow-up before lunch ends.",
-    context: "Your break is about 20 minutes. You can use it for work, use it for the clinic call, or actually take the break and leave both until later.",
+    sceneText: "Friday, 12:40pm. You are on your lunch break. A work task would clear your afternoon a bit if you finish it now. The breakfast things are still by the sink. And the clinic still needs calling back before close of business.",
+    context: "Your break is about 20 minutes. You have time to do one thing properly: the work task, the kitchen, or the clinic call.",
     choices: [
-      { id: "A", main: "Use the break to finish the work task and keep the afternoon clearer." , effects: { relationship: -6, her_stress: +4, alignment: -6, career: +5 }, signal: "You finish the task and feel more on top of work. The clinic still needs calling back when the afternoon starts.", accumulation: "Nothing dramatic happened. Work just used the loose space first.", storySignal: { connection: 0, avoidance: 0, workIntrusion: 1, involvement: 0, reliability: 0, repair: 0 } },
-      { id: "B", main: "Use the break to call the clinic back and leave the work task until later." , effects: { relationship: +8, her_stress: -6, alignment: +8, career: -4 }, signal: "{partnerName} notices before saying anything. The afternoon does not become easy, but one thing is no longer hanging over both of you.", accumulation: "It was only part of a lunch break. It still changed what being home meant.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 1, reliability: 1, repair: 0 } },
-      { id: "C", main: "Use the break to eat properly and reset. Leave both jobs until later." , effects: { relationship: +1, her_stress: +2, alignment: -1, career: -2 }, signal: "You feel a bit calmer by the end of lunch. The clinic and the work task are both still waiting for you.", accumulation: "You gave yourself a pause. The bigger question is still sitting there.", storySignal: { connection: 0, avoidance: 0, workIntrusion: 0, involvement: 0, reliability: 0, repair: 0 } }
+      { id: "A", main: "Use the break to finish the work task and keep the afternoon clearer." , effects: { relationship: -6, her_stress: +4, alignment: -6, career: +5 }, signal: "You finish the task and feel more on top of work. The clinic still needs calling back when the afternoon starts.", accumulation: "The work task was done. The clinic still needed calling back.", storySignal: { connection: 0, avoidance: 0, workIntrusion: 1, involvement: 0, reliability: 0, repair: 0 } },
+      { id: "B", main: "Use the break to clear the breakfast things and straighten the kitchen, then leave the rest for later." , effects: { relationship: +5, her_stress: -4, alignment: +4, career: -3 }, signal: "The kitchen looks better by the time lunch ends. It helps, but the clinic call is still there waiting to be made.", accumulation: "The kitchen was sorted. The clinic still needed calling back.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 1, reliability: 0, repair: 0 } },
+      { id: "C", main: "Use the break to call the clinic back and leave the work task until later." , effects: { relationship: +8, her_stress: -6, alignment: +8, career: -4 }, signal: "{partnerName} notices before saying anything. The afternoon does not become easy, but one thing is no longer hanging over both of you.", accumulation: "The clinic was sorted. The work task was still there for later.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 2, reliability: 1, repair: 0 } }
     ]
   },
 
@@ -1371,12 +1383,12 @@ const FAMILY_PLANNING_BRANCH = {
     id: "fp_4_out_loud_expecting",
     day: "Friday",
     time: "12:40pm",
-    sceneText: "Friday, 12:40pm. You are on your lunch break. You could use it to finish a work task that would clear your afternoon a bit. Or you could use it to ring the antenatal clinic back before lunch ends and sort out the appointment time they left on voicemail.",
-    context: "Your break is about 20 minutes. You can use it for work, use it for the clinic, or actually take the break and leave both until later.",
+    sceneText: "Friday, 12:40pm. You are on your lunch break. A work task would clear your afternoon a bit if you finish it now. The breakfast things are still by the sink. And the antenatal clinic still needs ringing back before lunch ends.",
+    context: "Your break is about 20 minutes. You have time to do one thing properly: the work task, the kitchen, or the clinic call.",
     choices: [
-      { id: "A", main: "Use the break to finish the work task and keep the afternoon clearer." , effects: { relationship: -6, her_stress: +4, alignment: -6, career: +5 }, signal: "You finish the task and feel more on top of work. The clinic still needs calling back when the afternoon starts.", accumulation: "Nothing dramatic happened. Work just used the loose space first.", storySignal: { connection: 0, avoidance: 0, workIntrusion: 1, involvement: 0, reliability: 0, repair: 0 } },
-      { id: "B", main: "Use the break to ring the antenatal clinic back and leave the work task until later." , effects: { relationship: +8, her_stress: -6, alignment: +8, career: -4 }, signal: "{partnerName} notices before saying anything. The afternoon does not become easy, but one thing is no longer hanging over both of you.", accumulation: "It was only part of a lunch break. It still changed what being home meant.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 1, reliability: 1, repair: 0 } },
-      { id: "C", main: "Use the break to eat properly and clear your head. Leave both jobs until later." , effects: { relationship: +1, her_stress: +2, alignment: -1, career: -2 }, signal: "You feel less wrung out by the end of lunch. The clinic still needs ringing back, and the work task is still there too.", accumulation: "The break helped you. It did not make the list any shorter.", storySignal: { connection: 0, avoidance: 0, workIntrusion: 0, involvement: 0, reliability: 0, repair: 0 } }
+      { id: "A", main: "Use the break to finish the work task and keep the afternoon clearer." , effects: { relationship: -6, her_stress: +4, alignment: -6, career: +5 }, signal: "You finish the task and feel more on top of work. The clinic still needs calling back when the afternoon starts.", accumulation: "The work task was done. The clinic still needed ringing back.", storySignal: { connection: 0, avoidance: 0, workIntrusion: 1, involvement: 0, reliability: 0, repair: 0 } },
+      { id: "B", main: "Use the break to clear the breakfast things and straighten the kitchen, then leave the rest for later." , effects: { relationship: +5, her_stress: -4, alignment: +4, career: -3 }, signal: "The kitchen looks better by the time lunch ends. It helps, but the clinic still needs ringing back.", accumulation: "The kitchen was sorted. The clinic still needed ringing back.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 1, reliability: 0, repair: 0 } },
+      { id: "C", main: "Use the break to ring the antenatal clinic back and leave the work task until later." , effects: { relationship: +8, her_stress: -6, alignment: +8, career: -4 }, signal: "{partnerName} notices before saying anything. The afternoon does not become easy, but one thing is no longer hanging over both of you.", accumulation: "The clinic call was done. The work task was still there for later.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 2, reliability: 1, repair: 0 } }
     ]
   },
 
@@ -1384,12 +1396,12 @@ const FAMILY_PLANNING_BRANCH = {
     id: "fp_4_out_loud_parenting",
     day: "Friday",
     time: "12:40pm",
-    sceneText: "Friday, 12:40pm. You are on your lunch break. You could use it to finish a work task that would clear your afternoon a bit. Or you could use it to lay out what your child will need after school and get Monday morning's school stuff ready before the afternoon starts properly.",
-    context: "Your break is about 20 minutes. You can use it for work, use it for the home prep, or actually take the break and leave both until later.",
+    sceneText: "Friday, 12:40pm. You are on your lunch break. A work task would clear your afternoon a bit if you finish it now. One child still needs what they will need after school laid out. Monday morning's school stuff also still needs sorting before the weekend swallows it.",
+    context: "Your break is about 20 minutes. You have time to do one thing properly: the work task, the after-school prep, or Monday morning's school prep.",
     choices: [
-      { id: "A", main: "Use the break to finish the work task and keep the afternoon clearer." , effects: { relationship: -6, her_stress: +4, career: +5, alignment: -6 }, signal: "You finish the task and feel more on top of work. The after-school things are still waiting when the afternoon starts.", accumulation: "Nothing dramatic happened. Work just used the loose space first.", storySignal: { connection: 0, avoidance: 0, workIntrusion: 1, involvement: 0, reliability: 0, repair: 0 } },
-      { id: "B", main: "Use the break to get the after-school things and Monday morning's school stuff ready, and leave the work task until later." , effects: { relationship: +8, her_stress: -6, career: -4, alignment: +8 }, signal: "{partnerName} notices before saying anything. The afternoon does not become easy, but one thing is ready before the rush starts.", accumulation: "It was only part of a lunch break. It still changed what being home meant.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 1, reliability: 1, repair: 0 } },
-      { id: "C", main: "Use the break to eat properly and reset. Leave both jobs until later." , effects: { relationship: +1, her_stress: +2, career: -2, alignment: -1 }, signal: "You feel a bit more present by the end of lunch. The after-school prep and the work task are both still waiting for you.", accumulation: "The break helped you. The rest of the day is still there.", storySignal: { connection: 0, avoidance: 0, workIntrusion: 0, involvement: 0, reliability: 0, repair: 0 } }
+      { id: "A", main: "Use the break to finish the work task and keep the afternoon clearer." , effects: { relationship: -6, her_stress: +4, career: +5, alignment: -6 }, signal: "You finish the task and feel more on top of work. The after-school things are still waiting when the afternoon starts.", accumulation: "The work task was done. The after-school prep was still waiting.", storySignal: { connection: 0, avoidance: 0, workIntrusion: 1, involvement: 0, reliability: 0, repair: 0 } },
+      { id: "B", main: "Use the break to get the after-school things laid out, and leave the work task until later." , effects: { relationship: +5, her_stress: -4, career: -3, alignment: +4 }, signal: "{partnerName} notices before saying anything. One visible part of the rush is handled before it starts, but Monday morning is still sitting there in the background.", accumulation: "The after-school prep was done. Monday morning still needed thinking about.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 1, reliability: 0, repair: 0 } },
+      { id: "C", main: "Use the break to get Monday morning's school stuff ready, and leave the work task until later." , effects: { relationship: +8, her_stress: -6, career: -4, alignment: +8 }, signal: "{partnerName} notices before saying anything. The afternoon does not become easy, but one of the jobs that usually sits in someone's head is already done.", accumulation: "Monday morning's school prep was done. The work task was still there for later.", storySignal: { connection: 1, avoidance: 0, workIntrusion: 0, involvement: 2, reliability: 1, repair: 0 } }
     ]
   }
 };
@@ -2435,12 +2447,12 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
     const noChildren = this.isNoChildrenProfile();
     const def = this.scenarioDef;
     const scenarioGoalHelp = {
-      family_planning: "This goal depends on a few things at once. Work needs to feel steady enough. Things between you need to feel steady enough. Her stress cannot keep climbing. And it cannot keep feeling like she is carrying more of this than you are.",
+      family_planning: "This only works if work feels steady enough, things between you feel steady enough, and she is not carrying more and more of it alone.",
       mental_health: noChildren
-        ? "This week is not only about your workload. It is also about whether the strain spills into your relationship and the whole atmosphere at home."
-        : "This week is not only about your workload. It is also about whether the strain spills into your partner, your child, and the whole mood at home.",
-      domestic_labour: "This week is not only about doing a few chores. It is also about whether you take real responsibility, whether she feels that shift, and whether work keeps pulling you back out of the house.",
-      employer: "Keeping a good employee is not enough on its own. The arrangement also has to hold up in practice, feel fair enough to the team, and avoid becoming something fragile or one-off."
+        ? "It is not just about getting through work. It is about whether the strain follows you home and changes the whole feel of the week."
+        : "It is not just about getting through work. It is about whether the strain follows you home and changes things for everyone else too.",
+      domestic_labour: "It is not only about doing jobs. It is about whether the load actually shifts, and whether it stays shifted when work pushes back in.",
+      employer: "Keeping a good employee is not enough on its own. The arrangement has to work, feel fair, and not fall apart the first time things get busy."
     };
     const meterHelp = {
       family_planning: {
@@ -2526,10 +2538,10 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
 
           ${interconnectionNote}${perceptionGapNote}${familyPlanningNote}${employerCultureNote}
 
-          <p class="label">What tends to affect this</p>
+          <p class="label">What matters this week</p>
           <div style="margin-bottom:16px;">${meterDescriptions}</div>
 
-          <p class="label">The week can go badly off track if...</p>
+          <p class="label">The week can slip if...</p>
           <ul style="padding-left:16px;margin-bottom:20px;">${failList}</ul>
 
           <p style="font-size:13px;color:#888;margin-bottom:20px;">There is no single right answer. Every choice has trade-offs.</p>
@@ -3427,7 +3439,11 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
     if (this.storyState?.familyWindowMode === 'family_first') return FAMILY_PLANNING_BRANCH.q2_open;
     if (this.storyState?.familyWindowMode === 'both') return FAMILY_PLANNING_BRANCH.q2_open_both;
     if (path === 'expecting') return FAMILY_PLANNING_BRANCH.q2_closed_expecting;
-    if (this.storyState?.partnerEmployment === 'not_employed') return FAMILY_PLANNING_BRANCH.q2_closed_homecare;
+    if (this.storyState?.partnerEmployment === 'not_employed') {
+      return this.hasCurrentChildrenProfile()
+        ? FAMILY_PLANNING_BRANCH.q2_closed_homecare
+        : FAMILY_PLANNING_BRANCH.q2_closed_home_no_children;
+    }
     return FAMILY_PLANNING_BRANCH.q2_closed_working;
   }
 
@@ -4135,7 +4151,7 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
       const driver = scores[0].label;
       return {
         label: driver,
-        summary: `The week mostly turned on ${driver}.`
+        summary: `The week kept coming back to ${driver}.`
       };
     }
 
@@ -4149,7 +4165,7 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
       const driver = scores[0].label;
       return {
         label: driver,
-        summary: `The week mostly turned on ${driver}.`
+        summary: `The week kept coming back to ${driver}.`
       };
     }
 
@@ -4163,7 +4179,7 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
       const driver = scores[0].label;
       return {
         label: driver,
-        summary: `The week mostly turned on ${driver}.`
+        summary: `The week kept coming back to ${driver}.`
       };
     }
 
@@ -4176,7 +4192,7 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
     const driver = scores[0].label;
     return {
       label: driver,
-      summary: `The week mostly turned on ${driver}.`
+      summary: `The week kept coming back to ${driver}.`
     };
   }
 
@@ -4207,7 +4223,9 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
     const reflectionDriver = this.getReflectionDriver();
     const compareSummary = mainFocus === "not stated"
       ? `${reflectionDriver.summary} That is why the ending comes from the whole pattern of the week, not just one moment.`
-      : `You said ${mainFocus} mattered most. ${reflectionDriver.summary} That is why the ending may not line up neatly with the one thing you cared about most.`;
+      : mainFocus === reflectionDriver.label
+        ? `You said ${mainFocus} mattered most. The week kept coming back to that too.`
+        : `You said ${mainFocus} mattered most. But ${reflectionDriver.summary.toLowerCase()} That is why the ending may not line up neatly with the one thing you cared about most.`;
 
     this.root.innerHTML = `
       <div class="screen active">
@@ -4231,7 +4249,7 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
           </div>
 
           <div style="background:#f8f8f8;border-radius:10px;padding:14px;margin-bottom:18px;">
-            <p style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;">What the game picked up most</p>
+            <p style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;">What the week seemed to turn on</p>
             <p style="font-size:15px;">${reflectionDriver.label}</p>
           </div>
 
