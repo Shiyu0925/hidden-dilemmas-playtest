@@ -214,6 +214,7 @@
       border-radius: 20px;
       font-size: 11px;
       font-weight: 500;
+      text-transform: capitalize;
     }
     .change-up { background: #d4edda; color: #155724; }
     .change-down { background: #f8d7da; color: #721c24; }
@@ -718,7 +719,7 @@ const SCENARIOS = {
       id: "fp_1",
       day: "Monday",
       time: "8:40am",
-      sceneText: "You planned to work from home today and go with {partnerName} to {familyAppointment} at lunchtime. At 8:40, your manager messages the team: 'I'm in the office today if anyone wants to come in. Need a couple of people here before lunch to go through yesterday's handover notes.'",
+      sceneText: "You planned to work from home today. You were meant to go with {partnerName} to {familyAppointment} at lunchtime. At 8:40, your manager messages the team: 'I'm in the office today if anyone wants to come in. Need a couple of people here before lunch to go through yesterday's handover notes.'",
       context: "The appointment was booked last week. The handover can be done from home. If you go in, people will notice you made the trip.",
       choices: [
         {
@@ -4033,7 +4034,7 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
 
         <div class="card" style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);padding:28px 24px;text-align:center;">
           <div style="width:56px;height:56px;border-radius:50%;background:${color};margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:28px;opacity:0.9;">${animal.emoji}</div>
-          <p style="color:rgba(255,255,255,0.5);font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">${charTitle}</p>
+          <p style="color:rgba(255,255,255,0.92);font-size:24px;font-weight:700;line-height:1.2;margin-bottom:6px;">${charTitle}</p>
           <p style="color:rgba(255,255,255,0.4);font-size:11px;">Week ${this.getScenarioLength()} complete</p>
         </div>
 
