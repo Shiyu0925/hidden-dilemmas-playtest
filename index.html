@@ -2861,6 +2861,66 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
         ? `${this.partnerName} is FULLY REMOTE — at home during the day, no commute`
         : `${this.partnerName} ${partnerWorkDesc}${commuteDesc ? ', ' + commuteDesc : ''}`;
 
+    const mentalHealthGuidance = this.scenarioType === 'mental_health' ? `
+
+MENTAL HEALTH DESIGN BRIEF:
+Core principles:
+- Every scene must contain a real tension between work and family.
+- Keep cognitive noise low.
+- Do not add extra context unless it changes the dilemma.
+- Keep scene text short, natural, and realistic.
+- Keep context to 2-3 short sentences, or remove it if unnecessary.
+- Choices must be short, clear, and balanced.
+- Previous choices should shape later branches.
+- Workplace pressure should be framed as perceived risk, anxiety, visibility, and possible bias, not confirmed punishment.
+- Endings must be direct, not vague.
+- Use plain English and direct words like promotion, stress, and quarrels at home.
+
+Scenario brief:
+- Character: Daniel
+- Daniel works full-time and can work from home 2-3 days a week.
+- He has one young child under 5.
+- His partner works mostly from the office.
+- His goal is promotion.
+
+Visible bars:
+- Work stress = pressure, anxiety, and worry about work, promotion, visibility, and how he is being judged.
+- Family relationship = how steady things feel at home, including conflict, disappointment, and whether quarrels at home are building.
+
+Structure:
+- Four decision points total.
+- Each choice moves both bars in opposite directions.
+- Branches should follow earlier choices.
+- Keep realism high and wording minimal.
+
+What you should help with:
+- Tighten scene wording.
+- Keep the tension sharp.
+- Make the branch feel consistent with the earlier choices.
+- Shorten wording where possible without losing the trade-off.
+
+What you should not do:
+- Do not invent long context.
+- Do not add decorative prose.
+- Do not add extra mechanics.
+- Do not change the number of bars.
+- Do not remove the promotion/family trade-off.
+- Do not use vague phrases like "still in the running" or "it could still go either way".
+
+Current working tree for reference:
+- Goal: Try to get the promotion without pushing up work stress or hurting family life.
+- Scene 1: Monday 6:15pm — Urgent task. Child's birthday dinner vs urgent task due before 8am tomorrow. Choice A = do it now; work stress down, family relationship down. Choice B = leave it until tomorrow morning; work stress up, family relationship up.
+- If Scene 1 = A: Scene 2 is Tuesday 3:00pm — Make-up plan under threat. Child still upset; promotion interview moved to 3:30pm today. Choice A = stay for interview and ask partner to do pickup. Choice B = leave for pickup and ask to reschedule.
+- If Scene 1 = B: Scene 2 is Tuesday 3:00pm — Still hanging over you. Late task now needs a 3:30pm presentation; it is also your turn to do pickup. Choice A = stay for the presentation and ask partner to cover pickup. Choice B = leave for pickup and ask to present later.
+- If home has taken more of the hit: Scene 3 is Thursday 8:00pm — Proper conversation or one more work task. Partner wants a proper chat before bed; follow-up note for promotion is unfinished. Choice A = finish the note now. Choice B = leave it until tomorrow and talk now.
+- If work has taken more of the hit: Scene 3 is Thursday 8:00am — Go in today or stay home. Manager asks him to come in to discuss the delayed task and promotion application. Choice A = go into the office. Choice B = stay home and ask to do it online.
+- If neutral: Scene 3 is Thursday 7:00am — Go into the office or stay home. Manager asks him to come in to go through the promotion application. Choice A = go into the office. Choice B = stay home and ask to do it online.
+- If mostly work-first: Scene 4 is Friday 8:40pm — This cannot keep happening. Partner says they cannot keep rearranging family life around work; then a work message comes in. Choice A = check the message now. Choice B = put the phone away and deal with this first.
+- If work has not clearly dominated the week: Scene 4 is Friday 11:45am — Visibility warning. Manager says visibility will matter in promotion decisions next week; partner then asks for a lift to a GP appointment at 1:30. Choice A = stay available for work and ask partner to make their own way. Choice B = drop partner off and deal with work later.
+
+Use this tree as the reference structure. You may improve the wording of this scene, but do not change the underlying branch logic or add extra backstory.
+` : '';
+
     // NOTE: att_father / att_stigma / att_hours are NOT passed — protected for attitude-behaviour gap analysis
     return `You are adapting a game scene for a working father. Make it feel like HIS real life.
 
@@ -2883,7 +2943,7 @@ ${this.scenarioType === 'family_planning' ? `WFH SIGNAL: ${
   (this.storyState?.workIntrusionScore || 0) >= 3 ? 'WFH used as office extension — being home has not changed the dynamic; ideal worker norm is winning' :
   (this.storyState?.workIntrusionScore || 0) === 0 && (this.storyState?.involvementScore || 0) >= 2 ? 'WFH actively used for presence — he is using home time for family, not just relocating the office' :
   'Mixed WFH signal — some presence, some intrusion; pattern not yet settled'
-}` : ''}
+}` : ''}${mentalHealthGuidance}
 
 SCENE TIME (FIXED — never change this): ${scene.day}, ${scene.time}
 
@@ -3034,11 +3094,12 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
       const rawText = data.text || '';
       console.log('AI raw:', rawText);
       const parsed = parseClaudeJSON(rawText);
+      const keepOriginalContext = this.scenarioType === 'mental_health';
       // guide uses "scene" key; also accept "sceneText" for backwards compat
       const personalized = this.preAdaptScene({
         ...scene,
         sceneText: parsed.scene || parsed.sceneText || scene.sceneText,
-        context:   parsed.context || scene.context,
+        context:   keepOriginalContext ? scene.context : (parsed.context || scene.context),
         _aiAdapted: true
       });
       if (this.scenarioType === 'family_planning' && scene.id === 'fp_1') {
