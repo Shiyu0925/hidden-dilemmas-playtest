@@ -652,7 +652,7 @@ const SCENARIO_DEFS = {
     id: "mental_health",
     title: "Mental Health",
     tagClass: "tag-2",
-    goal: "Try to get the promotion without letting work anxiety tip too far or hurt your family life.",
+    goal: "Try to get the promotion without letting work anxiety or your relationship tip too far.",
     description: "A week of small work-home trade-offs. The pressure is not just the work itself, but what it might mean for promotion if you get it wrong.",
     meters: [
       { id: "work_stress", name: "Work anxiety", color: "meter-amber", initial: 48, inverted: true },
@@ -660,12 +660,12 @@ const SCENARIO_DEFS = {
     ],
     failConditions: [
       { meter: "work_stress", threshold: 85, message: "Work anxiety hits 85% — the whole week starts feeling like a promotion test you cannot switch off from." },
-      { meter: "partner_satisfaction", threshold: 20, below: true, message: "Family relationship drops below 20% — quarrels at home are now inevitable." }
+      { meter: "partner_satisfaction", threshold: 20, below: true, message: "Family relationship drops below 20% — quarrels at home are now serious." }
     ],
     winCondition: { allOf: [
       { meter: "work_stress", threshold: 65, below: false, inverted: true },
       { meter: "partner_satisfaction", threshold: 45 }
-    ], message: "You stayed in the promotion race without letting the week slide too far at home." }
+    ], message: "You stay in the promotion race without letting the week slide too far at home." }
   },
   
   domestic_labour: {
@@ -763,15 +763,15 @@ const SCENARIOS = {
           id: "A",
           main: "Do it now.",
           effects: { work_stress: -10, partner_satisfaction: -10 },
-          signal: "You get the work moving, but dinner goes ahead without you. By the time you finally join them, the candles are gone.",
-          accumulation: "Work stress down: at least tonight's task is contained."
+          signal: "You got the work moving, but dinner went ahead without you. By the time you finally joined them, the candles were gone.",
+          accumulation: "Work anxiety eased: tonight's task felt contained."
         },
         {
           id: "B",
           main: "Leave it until tomorrow morning.",
           effects: { work_stress: +10, partner_satisfaction: +10 },
-          signal: "You make the dinner, but the task sits at the back of your mind all evening.",
-          accumulation: "Work stress up: you keep wondering whether leaving it will be noticed."
+          signal: "You made the dinner, but the task stayed at the back of your mind all evening.",
+          accumulation: "Work anxiety rose: you kept wondering whether leaving it would be noticed."
         }
       ]
     },
@@ -1988,25 +1988,12 @@ class Game {
 
   showSurvey() {
     this.surveyStartedAt = Date.now();
-    const attItem = (id, text) => `
-      <p style="font-size:14px;font-weight:500;margin-bottom:8px;">"${text}"</p>
-      <div style="display:flex;gap:6px;margin-bottom:6px;">
-        ${[1,2,3,4,5].map(n => `
-          <label style="display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px;color:#666;flex:1;cursor:pointer;">
-            <input type="radio" name="${id}" value="${n}" style="width:auto;margin:0;padding:0;">${n}${n === 3 ? '<span style="font-size:10px;color:#999;">Neutral</span>' : ''}
-          </label>
-        `).join('')}
-      </div>
-      <div style="display:flex;justify-content:space-between;font-size:11px;color:#bbb;margin-bottom:20px;">
-        <span>Strongly disagree</span><span>Strongly agree</span>
-      </div>`;
-
     this.root.innerHTML = `
       <div class="screen active">
         <div class="card" style="text-align:center;padding:28px 24px 16px;">
           <button onclick="game.showTitleScreen()" style="background:none;border:none;color:#888;font-size:13px;cursor:pointer;margin-bottom:12px;">← Back</button>
           <h2 style="font-size:22px;">⚔️ Create Your Character</h2>
-          <p class="subtitle" style="max-width:460px;margin:8px auto 0;">Step into the hidden dilemmas of a working dad's week. Before you play, build your character.<br><span style="color:#888;font-size:13px;"><strong>Name:</strong> use anything — real or invented. <strong>Everything else:</strong> please answer honestly. The research value depends on real responses about your background and work situation. All answers are anonymous.</span></p>
+          <p class="subtitle" style="max-width:460px;margin:8px auto 0;">Step into the hidden dilemmas of a working dad's week. Before you play, build your character.<br><span style="color:#888;font-size:13px;"><strong>Name:</strong> use anything — real or invented. <strong>Household and work setup:</strong> please answer honestly so the scenario fits your real situation. All answers are anonymous.</span></p>
         </div>
 
         <div class="char-create-wrap">
@@ -2024,23 +2011,6 @@ class Game {
 
               <label class="label">Character name / nickname</label>
               <input type="text" id="surv-nickname" placeholder="e.g. Tom, or make one up" onchange="game.updateAvatar()" style="margin-bottom:14px;">
-
-              <label class="label">Age</label>
-              <select id="surv-age" onchange="game.updateAvatar()">
-                <option value="">Select...</option>
-                <option value="20-29">20–29</option>
-                <option value="30-39">30–39</option>
-                <option value="40-49">40–49</option>
-                <option value="50-59">50–59</option>
-                <option value="60+">60 or older</option>
-              </select>
-
-              <label class="label">Highest qualification</label>
-              <select id="surv-edu" onchange="game.updateAvatar()">
-                <option value="">Select...</option>
-                <option value="degree">Degree-level or higher</option>
-                <option value="alevel">A-level or lower</option>
-              </select>
 
               <label class="label">Partner's name / nickname</label>
               <input type="text" id="surv-partner-name" placeholder="e.g. Sarah, or make one up" style="margin-bottom:14px;">
@@ -2136,13 +2106,8 @@ class Game {
             </div>
 
             <div class="card">
-              <h3 style="margin-bottom:6px;">🧠 Work and Family Context</h3>
-              <p style="font-size:12px;color:#888;margin-bottom:16px;font-style:italic;">These cover both personal views and the kind of workplace your character is in. Rate 1 (strongly disagree) → 5 (strongly agree)</p>
-
-              ${attItem('att_father', "A father should be as involved in childcare as the mother")}
-              ${attItem('att_stigma', "In my organisation, workers who work from home are seen as less motivated or committed than those who work at the premises")}
-              ${attItem('att_hours', "People in my workplace who want to progress usually have to put in long hours")}
-
+              <h3 style="margin-bottom:6px;">Ready to play?</h3>
+              <p style="font-size:12px;color:#888;margin-bottom:16px;font-style:italic;">We'll ask a few background and reflection questions after the game so you can get straight into the scenario.</p>
               <button class="btn btn-primary" onclick="game.saveSurvey()">Confirm character →</button>
             </div>
           </div>
@@ -2166,8 +2131,6 @@ class Game {
     if (pname && this.partnerName) pname.value = this.partnerName;
 
     // Selects
-    set('surv-age',               d.age);
-    set('surv-edu',               d.education);
     set('surv-partner-wfh',       d.partnerWfh);
     set('surv-partner-commute',   this.partnerCommute);
     set('surv-children',         d.children);
@@ -2176,15 +2139,6 @@ class Game {
     set('surv-industry',         d.industry);
     set('surv-occ',              d.occupation);
     set('surv-wfh',              d.wfh);
-
-    // Radio buttons (attitude items)
-    ['att_father', 'att_stigma', 'att_hours'].forEach(name => {
-      const val = d[name];
-      if (val) {
-        const radio = document.querySelector(`input[name="${name}"][value="${val}"]`);
-        if (radio) radio.checked = true;
-      }
-    });
 
     // Trigger avatar + visibility update to reflect restored values
     this.updateAvatar();
@@ -2219,17 +2173,12 @@ class Game {
       : (document.getElementById('surv-partner-commute')?.value || 'long');
 
     this.surveyData = {
-      age:        document.getElementById('surv-age').value,
-      education:  document.getElementById('surv-edu').value,
       children:   document.getElementById('surv-children').value,
       familyPlan: document.getElementById('surv-family-plan')?.value || '',
       industry:   ind,
       occupation: occ,
       wfh,
       partnerWfh,
-      att_father: document.querySelector('input[name="att_father"]:checked')?.value || null,
-      att_stigma: document.querySelector('input[name="att_stigma"]:checked')?.value || null,
-      att_hours:  document.querySelector('input[name="att_hours"]:checked')?.value || null,
     };
 
     // Store player/partner identity for use throughout game
@@ -2250,13 +2199,9 @@ class Game {
 
   async generateAvatarTitle() {
     const d = this.surveyData;
-    const attFather = d.att_father ? `${d.att_father}/5 on shared parenting` : 'no opinion given';
-    const attStigma = d.att_stigma ? `${d.att_stigma}/5 on WFH stigma felt at work` : 'no opinion given';
-    const attHours  = d.att_hours  ? `${d.att_hours}/5 on long-hours culture` : 'no opinion given';
     const prompt = `You're naming a character in a game about working dads' hidden dilemmas. Make it catchy — like a tweet or a film tagline, not an academic description.
 
 Role: ${this.surveyJobLabel || 'working parent'}, WFH: ${this.wfhArrangement}, family: ${d.children || 'unspecified'}
-Attitudes (1–5): equal parenting ${attFather}, WFH stigma felt ${attStigma}, long-hours culture ${attHours}
 
 Generate:
 1. Title: 2–4 words, punchy and specific — something a player would want to show their friends. Examples: "The 4:30 Dad", "The Sunday Night Worrier", "The Almost-Present Father", "The Last One Out"
@@ -2308,16 +2253,6 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
     const occDisplay = { '1':'Manager','2':'Professional','3':'Associate Prof.','4':'Admin','5':'Skilled Trades','6':'Personal Service','7':'Sales','8':'Operative','9':'Elementary' };
     const partnerWorkDisplay = wfhDisplay[d.partnerWfh] || (d.partnerWfh === 'na' ? 'Not employed' : '—');
 
-    // Belief trait tags
-    const attFather = parseInt(d.att_father);
-    const attStigma = parseInt(d.att_stigma);
-    const attHours  = parseInt(d.att_hours);
-    const beliefs = [
-      attFather >= 4 ? '🤝 Equal co-parent' : attFather <= 2 ? '👔 Traditional roles' : null,
-      attStigma >= 4 ? '👁️ WFH stigma felt' : attStigma <= 2 ? '🌿 Stigma-free workplace' : null,
-      attHours  >= 4 ? '⏱️ Long-hours culture' : attHours  <= 2 ? '⚖️ Work–life balance' : null,
-    ].filter(Boolean);
-
     this.root.innerHTML = `
       <div class="screen active">
         <div class="card" style="text-align:center;padding:32px 24px 24px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);">
@@ -2337,8 +2272,6 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
               ['Partner WFH', partnerWorkDisplay],
               ['Family', childDisplay[d.children] || '—'],
               ['Family plan', familyPlanDisplay[d.familyPlan] || '—'],
-              ['Age', d.age || '—'],
-              ['Education', d.education === 'degree' ? 'Degree+' : d.education ? 'A-level or lower' : '—'],
               ['Partner', this.partnerName || '—'],
             ].map(([k,v]) => `
               <div style="background:#f8f8f8;border-radius:8px;padding:10px;">
@@ -2346,11 +2279,6 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
                 <p style="font-size:13px;font-weight:500;">${v}</p>
               </div>`).join('')}
           </div>
-
-          ${beliefs.length ? `
-            <p class="label">Work and family cues</p>
-            <div style="margin-bottom:20px;">${beliefs.map(b => `<span class="char-trait-tag active">${b}</span>`).join('')}</div>
-          ` : ''}
 
           <button class="btn btn-primary" onclick="game.showScenarioSelect()">⚔️ Choose your quest →</button>
           <button onclick="game.showSurvey()" style="background:none;border:none;color:#888;font-size:13px;cursor:pointer;margin-top:10px;display:block;width:100%;text-align:center;">← Edit character</button>
@@ -2441,7 +2369,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
 
               <div style="background:#f8f8f8;border-radius:10px;padding:14px 16px;margin-bottom:18px;">
                 <p class="label" style="margin-bottom:8px;">Your goal this week</p>
-                <p style="font-size:14px;color:#444;line-height:1.55;">Stay on track for promotion without pushing up work stress or hurting family life.</p>
+                <p style="font-size:14px;color:#444;line-height:1.55;">Stay on track for promotion without pushing up work anxiety or hurting family life.</p>
               </div>
 
               <button class="btn btn-primary" onclick="game.startScenario()">Start Daniel's week</button>
@@ -2472,7 +2400,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
       },
       mental_health: {
         work_stress: "How much anxiety and worry you are carrying about work, visibility, and promotion by the end of each choice.",
-        partner_satisfaction: "How far family relationship still feels okay by the end of each choice."
+        partner_satisfaction: "How steady your family relationship still feels by the end of each choice."
       },
       domestic_labour: {
         his_perception: "How much you think you contributed this week.",
@@ -2512,7 +2440,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
     const interconnectionNote = def.id === 'mental_health' ? `
       <div style="background:#fff8e1;border-left:4px solid #DAA520;padding:12px 14px;border-radius:0 8px 8px 0;margin-bottom:16px;">
         <p style="font-size:12px;color:#856404;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;">⚡ What the bars mean here</p>
-        <p style="font-size:13px;color:#555;line-height:1.5;">Work stress reflects perceived risk at work, not confirmed punishment. Partner satisfaction tracks whether home still feels steady, or whether work keeps taking the bigger share.</p>
+        <p style="font-size:13px;color:#555;line-height:1.5;">Work anxiety reflects perceived risk at work, not confirmed punishment. Family relationship tracks whether home still feels steady, or whether work keeps taking the bigger share.</p>
       </div>` : '';
 
     const familyPlanningNote = def.id === 'family_planning' ? `
@@ -2727,8 +2655,8 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
         sceneText: "Your child is still upset about last night, and you said you would make it up by doing pickup and taking him to Lego. At 3:00pm, your promotion interview planned for tomorrow is suddenly moved to 3:30pm today.",
         context: "If you miss this slot, you do not know when they will fit it back in.",
         choices: [
-          { id: "A", main: "Stay for the interview and ask {partnerName} to do pickup.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You stay for the interview. Pickup changes hands again.", accumulation: "Work stress down: the interview happens when they want it to." },
-          { id: "B", main: "Leave for pickup and ask to reschedule.", effects: { work_stress: +10, partner_satisfaction: +10 }, signal: "You leave for pickup. The interview is no longer secure.", accumulation: "Work stress up: now you do not know how that looks." }
+          { id: "A", main: "Stay for the interview and ask {partnerName} to do pickup.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You stayed for the interview. Pickup changed hands again.", accumulation: "Work anxiety eased: the interview happened when they wanted it to." },
+          { id: "B", main: "Leave for pickup and ask to reschedule.", effects: { work_stress: +10, partner_satisfaction: +10 }, signal: "You left for pickup. The interview then felt less secure.", accumulation: "Work anxiety rose: you no longer knew how that would look." }
         ]
       };
     }
@@ -2736,11 +2664,11 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
       id: "mh_2_hanging",
       day: "Tuesday",
       time: "3:00pm",
-      sceneText: "You sent the work after the deadline this morning. Your manager has not had time to read it and now wants you to present it at 3:30pm today. It is also your turn to do pickup, and {partnerName} is at work.",
-      context: "You cannot do both at the same time.",
-      choices: [
-        { id: "A", main: "Stay for the presentation and ask {partnerName} to cover pickup.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You stay for the presentation. Pickup shifts back onto {partnerName}.", accumulation: "Work stress down: at least you are there to explain it yourself." },
-        { id: "B", main: "Leave for pickup and ask to present later.", effects: { work_stress: +10, partner_satisfaction: +10 }, signal: "You leave for pickup. The presentation now depends on whether they will move it for you.", accumulation: "Work stress up: the delayed task is still hanging over you." }
+        sceneText: "You sent the work after the deadline this morning. Your manager has not had time to read it and now wants you to present it at 3:30pm today. It is also your turn to do pickup, and {partnerName} is at work.",
+        context: "You cannot do both at the same time.",
+        choices: [
+        { id: "A", main: "Stay for the presentation and ask {partnerName} to cover pickup.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You stayed for the presentation. Pickup shifted back onto {partnerName}.", accumulation: "Work anxiety eased: at least you were there to explain it yourself." },
+        { id: "B", main: "Leave for pickup and ask to present later.", effects: { work_stress: +10, partner_satisfaction: +10 }, signal: "You left for pickup. The presentation then rested on whether they would move it for you.", accumulation: "Work anxiety rose: the delayed task was still hanging over you." }
       ]
     };
   }
@@ -2755,8 +2683,8 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
         sceneText: "Your partner says you have seemed to keep work ahead of them all week and wants to talk before bed. You have not finished a follow-up note for tomorrow that could matter for your promotion.",
         context: "You can do the note now, or you can deal with home first.",
         choices: [
-          { id: "A", main: "Finish the note now.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You turn back to work. The note gets done, but your partner fell asleep.", accumulation: "Work stress down: the note is no longer waiting for tomorrow morning." },
-          { id: "B", main: "Leave it until tomorrow and talk now.", effects: { work_stress: +10, partner_satisfaction: +10 }, signal: "You leave the note and stay in the room. The work is still there for tomorrow.", accumulation: "Work stress up: now the morning will start with something unfinished." }
+          { id: "A", main: "Finish the note now.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You turned back to work. The note got done, but the conversation did not happen that night.", accumulation: "Work anxiety eased: the note was no longer waiting for the morning." },
+          { id: "B", main: "Leave it until tomorrow and talk now.", effects: { work_stress: +10, partner_satisfaction: +10 }, signal: "You left the note and stayed in the room. The work was still there for tomorrow.", accumulation: "Work anxiety rose: the morning now started with something unfinished." }
         ]
       };
     }
@@ -2768,8 +2696,8 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
         sceneText: "Today is one of your work-from-home days. After Tuesday, your manager asks if you can come in to talk through the delayed task and your promotion application. Your partner is out at work, and staying home means you can still cover the family side as planned.",
         context: "If you go in, the home side needs covering another way.",
         choices: [
-          { id: "A", main: "Go into the office.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You go in. Work feels safer, but the plan at home has to move again.", accumulation: "Work stress down: at least you are in the room for that conversation." },
-          { id: "B", main: "Stay home and ask to do it online.", effects: { work_stress: +10, partner_satisfaction: +10 }, signal: "You stay home. The family side stays covered, but you do not know how the request lands.", accumulation: "Work stress up: now you are guessing what not going in will mean." }
+          { id: "A", main: "Go into the office.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You went in. Being there in person felt less exposed, but the plan at home had to move again.", accumulation: "Work anxiety eased: being there in person felt harder to question." },
+          { id: "B", main: "Stay home and ask to do it online.", effects: { work_stress: +10, partner_satisfaction: +10 }, signal: "You stayed home. The family side stayed covered, but you did not know how the request landed.", accumulation: "Work anxiety rose: you were left guessing what not going in would mean." }
         ]
       };
     }
@@ -2780,8 +2708,8 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
       sceneText: "Today is usually one of your work-from-home days. Your manager asks if you can come in this morning to go through your promotion application. If you go in, {partnerName} will have to adjust the family plan again.",
       context: "Either work changes, or home does.",
       choices: [
-        { id: "A", main: "Go into the office.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You go in. The meeting happens in person, and the family plan shifts again.", accumulation: "Work stress down: at least you are there in person." },
-        { id: "B", main: "Stay home and ask to do it online.", effects: { work_stress: +10, partner_satisfaction: +10 }, signal: "You stay home. Home holds, but work feels less certain again.", accumulation: "Work stress up: you do not know whether online will feel like enough." }
+        { id: "A", main: "Go into the office.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You went in. Being there in person felt easier to defend, and the family plan shifted again.", accumulation: "Work anxiety eased: being there in person felt easier to justify." },
+        { id: "B", main: "Stay home and ask to do it online.", effects: { work_stress: +10, partner_satisfaction: +10 }, signal: "You stayed home. Home held, but work felt less certain again.", accumulation: "Work anxiety rose: you did not know whether online would feel like enough." }
       ]
     };
   }
@@ -2799,8 +2727,8 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
         sceneText: "Your partner says they are tired of rearranging family life around your work. You were supposed to spend tonight together. Just then, your manager messages asking if you can send over one last revision tonight so it can be included in Monday's promotion discussion.",
         context: "If you leave it until Monday, you worry it will look as if work was not your priority.",
         choices: [
-          { id: "A", main: "Check the message now.", effects: { work_stress: -10, partner_satisfaction: -12 }, signal: "You check it straight away. Work feels safer. Home does not.", accumulation: "Work stress down: at least you know what the message is." },
-          { id: "B", main: "Put the phone away and deal with this first.", effects: { work_stress: +10, partner_satisfaction: +12 }, signal: "You leave the message alone. The conversation at home finally happens.", accumulation: "Work stress up: the message is still there, unanswered." }
+          { id: "A", main: "Check the message now.", effects: { work_stress: -10, partner_satisfaction: -12 }, signal: "You checked it straight away. Work felt easier to contain. Home did not.", accumulation: "Work anxiety eased: at least you knew what the message was." },
+          { id: "B", main: "Put the phone away and deal with this first.", effects: { work_stress: +10, partner_satisfaction: +12 }, signal: "You left the message alone. The conversation at home finally happened.", accumulation: "Work anxiety rose: the message was still there, unanswered." }
         ]
       };
     }
@@ -2812,8 +2740,8 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
       sceneText: "Your manager says the team will be watched more closely next week. They add that visibility will matter in promotion decisions. A few minutes later, {partnerName} asks if you can drop them off for a GP appointment at 1:30 because they have not been able to sort another way.",
       context: "You can stay available for work, or help and sort work later.",
       choices: [
-        { id: "A", main: "Stay available for work and ask {partnerName} to make their own way.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You stay where you are. Work feels steadier, but the ask at home does not go away.", accumulation: "Work stress down: at least this afternoon stays clear." },
-        { id: "B", main: "Drop {partnerName} off and deal with work later.", effects: { work_stress: +10, partner_satisfaction: +10 }, signal: "You go with {partnerName}. Home feels steadier, but work is now something you need to catch up on.", accumulation: "Work stress up: next week already feels closer." }
+        { id: "A", main: "Stay available for work and ask {partnerName} to make their own way.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You stayed where you were. Work felt more manageable, but the ask at home did not go away.", accumulation: "Work anxiety eased: at least the afternoon stayed clear." },
+        { id: "B", main: "Drop {partnerName} off and deal with work later.", effects: { work_stress: +10, partner_satisfaction: +10 }, signal: "You went with {partnerName}. Home felt steadier, but work was then something you needed to catch up on.", accumulation: "Work anxiety rose: next week already felt closer." }
       ]
     };
   }
@@ -2909,8 +2837,8 @@ What you should not do:
 - Do not use vague phrases like "still in the running" or "it could still go either way".
 
 Current working tree for reference:
-- Goal: Try to get the promotion without pushing up work stress or hurting family life.
-- Scene 1: Monday 6:15pm — Urgent task. Child's birthday dinner vs urgent task due before 8am tomorrow. Choice A = do it now; work stress down, family relationship down. Choice B = leave it until tomorrow morning; work stress up, family relationship up.
+- Goal: Try to get the promotion without pushing up work anxiety or hurting family life.
+- Scene 1: Monday 6:15pm — Urgent task. Child's birthday dinner vs urgent task due before 8am tomorrow. Choice A = do it now; work anxiety down, family relationship down. Choice B = leave it until tomorrow morning; work anxiety up, family relationship up.
 - If Scene 1 = A: Scene 2 is Tuesday 3:00pm — Make-up plan under threat. Child still upset; promotion interview moved to 3:30pm today. Choice A = stay for interview and ask partner to do pickup. Choice B = leave for pickup and ask to reschedule.
 - If Scene 1 = B: Scene 2 is Tuesday 3:00pm — Still hanging over you. Late task now needs a 3:30pm presentation; it is also your turn to do pickup. Choice A = stay for the presentation and ask partner to cover pickup. Choice B = leave for pickup and ask to present later.
 - If home has taken more of the hit: Scene 3 is Thursday 8:00pm — Proper conversation or one more work task. Partner wants a proper chat before bed; follow-up note for promotion is unfinished. Choice A = finish the note now. Choice B = leave it until tomorrow and talk now.
@@ -3960,12 +3888,12 @@ Return ONLY valid JSON: {"scene":"..."}`;
   }
   
   showPostSurvey() {
-    const likert5 = (id, text, lo, hi) => `
+    const likert5 = (id, text, lo, hi, selectedValue = '') => `
       <p style="font-size:14px;font-weight:500;margin-bottom:8px;">${text}</p>
       <div style="display:flex;gap:6px;margin-bottom:4px;">
         ${[1,2,3,4,5].map(n => `
           <label style="display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px;color:#666;flex:1;cursor:pointer;">
-            <input type="radio" name="${id}" value="${n}" style="width:auto;margin:0;padding:0;">${n}
+            <input type="radio" name="${id}" value="${n}" style="width:auto;margin:0;padding:0;" ${String(selectedValue) === String(n) ? 'checked' : ''}>${n}
           </label>`).join('')}
       </div>
       <div style="display:flex;justify-content:space-between;font-size:11px;color:#bbb;margin-bottom:20px;">
@@ -3979,6 +3907,8 @@ Return ONLY valid JSON: {"scene":"..."}`;
             <input type="radio" name="${id}" value="${lbl}" style="width:auto;margin:0;padding:0;"> ${lbl}
           </label>`).join('')}
       </div>`;
+
+    const profile = this.postSurveyData?.profile || {};
 
     // Build per-choice IRL questions from actual choices made
     const sceneLabels = {
@@ -4023,7 +3953,33 @@ Return ONLY valid JSON: {"scene":"..."}`;
           <h3>One last thing</h3>
           <p class="subtitle" style="margin-bottom:20px;">Your answers go straight into the research. This takes about 2–3 minutes.</p>
 
-          ${likert5('post_realism', 'Overall, how realistic did these situations feel?', 'Not realistic at all', 'Completely realistic')}
+          ${likert5('post_realism', 'Overall, how realistic did these situations feel?', 'Not realistic at all', 'Completely realistic', this.postSurveyData?.realism)}
+        </div>
+
+        <div class="card">
+          <h3 style="margin-bottom:14px;">About you</h3>
+          <p style="font-size:13px;color:#888;margin-bottom:16px;">These were moved to the end so you could get into the game first.</p>
+
+          <label class="label">Age</label>
+          <select id="post_age" style="margin-bottom:16px;">
+            <option value="">Select...</option>
+            <option value="20-29" ${profile.age === '20-29' ? 'selected' : ''}>20–29</option>
+            <option value="30-39" ${profile.age === '30-39' ? 'selected' : ''}>30–39</option>
+            <option value="40-49" ${profile.age === '40-49' ? 'selected' : ''}>40–49</option>
+            <option value="50-59" ${profile.age === '50-59' ? 'selected' : ''}>50–59</option>
+            <option value="60+" ${profile.age === '60+' ? 'selected' : ''}>60 or older</option>
+          </select>
+
+          <label class="label">Highest qualification</label>
+          <select id="post_education" style="margin-bottom:16px;">
+            <option value="">Select...</option>
+            <option value="degree" ${profile.education === 'degree' ? 'selected' : ''}>Degree-level or higher</option>
+            <option value="alevel" ${profile.education === 'alevel' ? 'selected' : ''}>A-level or lower</option>
+          </select>
+
+          ${likert5('post_att_father', 'A father should be as involved in childcare as the mother', 'Strongly disagree', 'Strongly agree', profile.att_father)}
+          ${likert5('post_att_stigma', 'In my organisation, workers who work from home are seen as less motivated or committed than those who work at the premises', 'Strongly disagree', 'Strongly agree', profile.att_stigma)}
+          ${likert5('post_att_hours', 'People in my workplace who want to progress usually have to put in long hours', 'Strongly disagree', 'Strongly agree', profile.att_hours)}
         </div>
 
         <div class="card">
@@ -4063,7 +4019,7 @@ Return ONLY valid JSON: {"scene":"..."}`;
               <option value="load">Stopping things landing mostly on her</option>
             ` : `
               <option value="work">Work performance</option>
-              <option value="stress">Work stress</option>
+              <option value="stress">Work anxiety</option>
               <option value="promotion">Promotion chances</option>
               <option value="peace">Keeping the peace at home</option>
             `}
@@ -4103,7 +4059,16 @@ Return ONLY valid JSON: {"scene":"..."}`;
       irlSame:    document.querySelector(`input[name="irl_${i}"]:checked`)?.value || null,
     }));
 
+    const profile = {
+      age:        document.getElementById('post_age')?.value || null,
+      education:  document.getElementById('post_education')?.value || null,
+      att_father: document.querySelector('input[name="post_att_father"]:checked')?.value || null,
+      att_stigma: document.querySelector('input[name="post_att_stigma"]:checked')?.value || null,
+      att_hours:  document.querySelector('input[name="post_att_hours"]:checked')?.value || null,
+    };
+
     this.postSurveyData = {
+      profile,
       realism:            document.querySelector('input[name="post_realism"]:checked')?.value || null,
       playedAs:           document.getElementById('post_played_as')?.value || null,
       mainFocus:          document.getElementById('post_main_focus')?.value || null,
@@ -4113,6 +4078,7 @@ Return ONLY valid JSON: {"scene":"..."}`;
       irlWhatDifferent:   document.getElementById('post_irl_different')?.value?.trim() || null,
       surpriseMoment:     document.getElementById('post_surprise')?.value?.trim() || null,
     };
+    this.surveyData = { ...(this.surveyData || {}), ...profile };
     this.savePostSurveyRecord();
     this.showReflectionSummary();
   }
@@ -4138,7 +4104,7 @@ Return ONLY valid JSON: {"scene":"..."}`;
 
     if (this.scenarioType === 'mental_health') {
       const scores = [
-        { label: "work stress", value: 100 - (this.meters.work_stress ?? 50) },
+        { label: "work anxiety", value: 100 - (this.meters.work_stress ?? 50) },
         { label: "whether home still felt steady", value: this.meters.partner_satisfaction ?? 50 }
       ].sort((a, b) => a.value - b.value);
       const driver = scores[0].label;
@@ -4182,7 +4148,7 @@ Return ONLY valid JSON: {"scene":"..."}`;
       partner_stress: "your partner's stress",
       shared_effort: "how much effort came from both of you",
       work: "work performance",
-      stress: "work stress",
+      stress: "work anxiety",
       promotion: "promotion chances",
       energy: "your own energy",
       family_time: "family time",
