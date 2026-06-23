@@ -1325,27 +1325,27 @@ const ENDINGS = {
     { id: "win",
       condition: (m) => m.work_stress < 65 && m.partner_satisfaction >= 45,
       style: "ending-success", title: "You got promoted",
-      desc: "You got promoted. By the end of the week, work stress is at {work_stress}% and family relationship is at {partner_satisfaction}%. The week was hard, but it did not turn into serious quarrels at home.",
+      desc: "You got promoted. By the end of the week, work stress is at {work_stress} and family relationship is at {partner_satisfaction}. You managed to stay present enough at home without making your manager doubt your commitment to the promotion.",
       insight: "The pressure here is often about perceived visibility rather than confirmed punishment. That is why small work-home moments can carry so much weight." },
     { id: "fail_both",
       condition: (m) => m.work_stress >= 65 && m.partner_satisfaction < 45,
       style: "ending-danger", title: "You did not get promoted",
-      desc: "You did not get promoted. Family conflicts kept dragging you away from work, and work stress became too high at the same time. By the end of the week, work stress is at {work_stress}% and family relationship is at {partner_satisfaction}%.",
+      desc: "You did not get promoted because both family conflict and work stress became too serious. By the end of the week, work stress is at {work_stress} and family relationship is at {partner_satisfaction}. Quarrels at home kept building, and your manager was left less sure about your commitment to the promotion.",
       insight: "When pressure at work and conflict at home build at the same time, each one makes the other harder to manage." },
     { id: "fail_relationship",
       condition: (m) => m.work_stress < 65 && m.partner_satisfaction < 45,
       style: "ending-warning", title: "You did not get promoted",
-      desc: "You did not get promoted because family conflicts kept pulling you away from work. By the end of the week, family relationship is down to {partner_satisfaction}%. Too many promises were moved, cut short, or pushed behind work.",
+      desc: "You did not get promoted because family conflicts kept pulling you away from work. By the end of the week, family relationship is down to {partner_satisfaction}. Too many promises were moved, cut short, or pushed behind work, and quarrels at home made it harder to stay focused on the promotion.",
       insight: "Relationship strain often builds through repeated small disappointments rather than one decisive argument." },
     { id: "fail_stress",
       condition: (m) => m.work_stress >= 65 && m.partner_satisfaction >= 45,
       style: "ending-warning", title: "You did not get promoted",
-      desc: "You did not get promoted because work stress became too high. By the end of the week, work stress is at {work_stress}%. The promotion pressure never really switched off, and it became harder to focus clearly on work.",
+      desc: "You did not get promoted because work stress and anxiety became too high. By the end of the week, work stress is at {work_stress}. You managed to support your family and be present at important moments, but your manager was left less sure about your commitment to the promotion.",
       insight: "Promotion pressure can become especially hard to switch off when the standard is felt rather than clearly stated." },
     { id: "progress",
       condition: () => true,
       style: "ending-neutral", title: "You did not get promoted",
-      desc: "You did not get promoted this time. Work stress ends at {work_stress}% and family relationship ends at {partner_satisfaction}%. The week never fully settled on either side.",
+      desc: "You did not get promoted this time. Work stress ends at {work_stress} and family relationship ends at {partner_satisfaction}. You avoided the worst outcome at home and at work, but your manager was still left unsure about your commitment to the promotion.",
       insight: "These weeks often turn on repeated small decisions, not one dramatic mistake." }
   ],
   domestic_labour: [
@@ -2752,7 +2752,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
         id: "mh_3_home_debt",
         day: "Thursday",
         time: "8:00pm",
-        sceneText: "Your partner wants to have a proper chat before bed. You still have not finished the follow-up note for tomorrow, and you know it may matter for your promotion application.",
+        sceneText: "Your partner says you have seemed to keep work ahead of them all week and wants to talk before bed. You have not finished a follow-up note for tomorrow that could matter for your promotion.",
         context: "You can do the note now, or you can deal with home first.",
         choices: [
           { id: "A", main: "Finish the note now.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You turn back to work. The note gets done, but the conversation does not happen tonight.", accumulation: "Work stress down: the note is no longer waiting for tomorrow morning." },
@@ -2796,8 +2796,8 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
         id: "mh_4_work_first",
         day: "Friday",
         time: "8:40pm",
-        sceneText: "Your partner says they cannot keep rearranging family life around your work. You were meant to spend tonight together properly. Just then, a work message comes in.",
-        context: "You can stop and deal with home, or let work back in again.",
+        sceneText: "Your partner says they are tired of rearranging family life around your work. You were supposed to spend tonight together. Just then, your manager messages asking if you can send over one last revision tonight so it can be included in Monday's promotion discussion.",
+        context: "If you leave it until Monday, you worry it will look as if work was not your priority.",
         choices: [
           { id: "A", main: "Check the message now.", effects: { work_stress: -10, partner_satisfaction: -12 }, signal: "You check it straight away. Work feels safer. Home does not.", accumulation: "Work stress down: at least you know what the message is." },
           { id: "B", main: "Put the phone away and deal with this first.", effects: { work_stress: +10, partner_satisfaction: +12 }, signal: "You leave the message alone. The conversation at home finally happens.", accumulation: "Work stress up: the message is still there, unanswered." }
@@ -3712,9 +3712,9 @@ Return ONLY valid JSON: {"scene":"..."}`;
               <span style="font-size: 12px; color: #888;">${this.currentIndex + 1} of ${totalScenes}</span>
             </div>
             <p style="font-size:13px;color:#666;margin-bottom:14px;"><strong>Goal:</strong> ${this.scenarioDef.goal}</p>
-            ${this.renderOutlookCard()}
+            ${this.scenarioType === 'mental_health' ? '' : this.renderOutlookCard()}
             <p class="scene-text">${this.replaceVars(scene.sceneText)}</p>
-            <div class="context-box">${this.replaceVars(scene.context)}</div>
+            ${this.scenarioType === 'mental_health' ? '' : `<div class="context-box">${this.replaceVars(scene.context)}</div>`}
             <div class="signal-box" style="border-left-color:#888;">
               <p class="signal-text" style="color:#666;">${scene.endingText}</p>
             </div>
@@ -3757,11 +3757,12 @@ Return ONLY valid JSON: {"scene":"..."}`;
             <p class="label" style="margin-bottom:10px;">This week so far</p>
             <div id="meter-panel">${this.renderMeters()}</div>
           </div>
-          ${this.renderOutlookCard()}
+          ${this.scenarioType === 'mental_health' ? '' : this.renderOutlookCard()}
 
           <p class="scene-text">${this.replaceVars(scene.sceneText)}</p>
+          ${this.scenarioType === 'mental_health' ? '' : `
           <p class="label" style="margin-top:14px;margin-bottom:6px;">Context</p>
-          <div class="context-box">${this.replaceVars(context)}</div>
+          <div class="context-box">${this.replaceVars(context)}</div>`}
 
           <div id="choices-container">${choicesHtml}</div>
           <div id="signal-container"></div>
@@ -3938,7 +3939,7 @@ Return ONLY valid JSON: {"scene":"..."}`;
         </div>
 
         <div class="card" style="margin-top:0;border-radius:0 0 12px 12px;">
-          ${this.renderOutlookCard("By the end of the week")}
+          ${this.scenarioType === 'mental_health' ? '' : this.renderOutlookCard("By the end of the week")}
           <p class="label" style="margin-bottom:10px;">How the week played out</p>
           <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;">${meterCards}</div>
 
