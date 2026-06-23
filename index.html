@@ -586,7 +586,7 @@ const METER_FEEDBACK_LABELS = {
   child_wellbeing: "Child wellbeing",
   family_time: "Time together",
   work_stress: "Work stress",
-  partner_satisfaction: "Partner satisfaction",
+  partner_satisfaction: "Family relationship",
   his_perception: "Your view",
   her_perception: "Her view",
   actual_split: "Your share",
@@ -607,7 +607,7 @@ const METER_FEEDBACK_PHRASES = {
   child_wellbeing: { up: "Home felt easier", down: "Your child felt it" },
   family_time: { up: "More time together", down: "Time together slipped" },
   work_stress: { up: "Work pressure eased", down: "Work pressure rose" },
-  partner_satisfaction: { up: "Home felt steadier", down: "Home felt worse" },
+  partner_satisfaction: { up: "Family relationship improved", down: "Family tension rose" },
   his_perception: { up: "You felt more on top of it", down: "You felt less on top of it" },
   her_perception: { up: "She saw more of it", down: "She saw less of it" },
   actual_split: { up: "You took on more", down: "You took on less" },
@@ -656,11 +656,11 @@ const SCENARIO_DEFS = {
     description: "A week of small work-home trade-offs. The pressure is not just the work itself, but what it might mean for promotion if you get it wrong.",
     meters: [
       { id: "work_stress", name: "Work stress", color: "meter-amber", initial: 48, inverted: true },
-      { id: "partner_satisfaction", name: "Partner satisfaction", color: "meter-teal", initial: 58 }
+      { id: "partner_satisfaction", name: "Family relationship", color: "meter-teal", initial: 58 }
     ],
     failConditions: [
       { meter: "work_stress", threshold: 85, message: "Work stress hits 85% — the whole week starts feeling like a promotion test you cannot switch off from." },
-      { meter: "partner_satisfaction", threshold: 20, below: true, message: "Partner satisfaction drops below 20% — at home, this no longer feels like a one-off bad week." }
+      { meter: "partner_satisfaction", threshold: 20, below: true, message: "Family relationship drops below 20% — quarrels at home are now serious." }
     ],
     winCondition: { allOf: [
       { meter: "work_stress", threshold: 65, below: false, inverted: true },
@@ -1324,28 +1324,28 @@ const ENDINGS = {
   mental_health: [
     { id: "win",
       condition: (m) => m.work_stress < 65 && m.partner_satisfaction >= 45,
-      style: "ending-success", title: "Promotion Still Feels Within Reach",
-      desc: "You got through the week with work stress at {work_stress}% and partner satisfaction at {partner_satisfaction}%. Promotion still feels possible, and home did not have to absorb every cost of getting there.",
+      style: "ending-success", title: "You got promoted",
+      desc: "You got promoted. By the end of the week, work stress is at {work_stress}% and family relationship is at {partner_satisfaction}%. The week was hard, but it did not turn into serious quarrels at home.",
       insight: "The pressure here is often about perceived visibility rather than confirmed punishment. That is why small work-home moments can carry so much weight." },
-    { id: "partial_success",
-      condition: (m) => m.work_stress < 70 && m.partner_satisfaction >= 20,
-      style: "ending-warning", title: "You May Still Get It, But At A Cost",
-      desc: "You may still be in the running, but the week did damage. Work stress ended at {work_stress}%. Partner satisfaction ended at {partner_satisfaction}%. At home, this no longer feels like one difficult week.",
-      insight: "When work pressure keeps winning small moments at home, the cost often shows up first as distance rather than a dramatic collapse." },
+    { id: "fail_both",
+      condition: (m) => m.work_stress >= 65 && m.partner_satisfaction < 45,
+      style: "ending-danger", title: "You did not get promoted",
+      desc: "You did not get promoted. Family conflicts kept dragging you away from work, and work stress became too high at the same time. By the end of the week, work stress is at {work_stress}% and family relationship is at {partner_satisfaction}%.",
+      insight: "When pressure at work and conflict at home build at the same time, each one makes the other harder to manage." },
     { id: "fail_relationship",
-      condition: (m) => m.partner_satisfaction < 20,
-      style: "ending-danger", title: "Home Took Too Much Of The Hit",
-      desc: "Partner satisfaction dropped to {partner_satisfaction}%. Whatever happens with promotion, home does not feel stable by the end of the week. Too many promises got moved, cut short, or pushed back behind work.",
+      condition: (m) => m.work_stress < 65 && m.partner_satisfaction < 45,
+      style: "ending-warning", title: "You did not get promoted",
+      desc: "You did not get promoted because family conflicts kept pulling you away from work. By the end of the week, family relationship is down to {partner_satisfaction}%. Too many promises were moved, cut short, or pushed behind work.",
       insight: "Relationship strain often builds through repeated small disappointments rather than one decisive argument." },
     { id: "fail_stress",
-      condition: (m) => m.work_stress >= 85,
-      style: "ending-danger", title: "Work Took Over The Week",
-      desc: "Work stress reached {work_stress}%. The week never stopped feeling like a test. Even when you were at home, work was still deciding what the next hour felt like.",
+      condition: (m) => m.work_stress >= 65 && m.partner_satisfaction >= 45,
+      style: "ending-warning", title: "You did not get promoted",
+      desc: "You did not get promoted because work stress became too high. By the end of the week, work stress is at {work_stress}%. The promotion pressure never really switched off, and it became harder to focus clearly on work.",
       insight: "Promotion pressure can become especially hard to switch off when the standard is felt rather than clearly stated." },
     { id: "progress",
       condition: () => true,
-      style: "ending-neutral", title: "Still In The Balance",
-      desc: "Work stress finished at {work_stress}%. Partner satisfaction finished at {partner_satisfaction}%. You are still in it on both sides, but neither side feels settled yet.",
+      style: "ending-neutral", title: "You did not get promoted",
+      desc: "You did not get promoted this time. Work stress ends at {work_stress}% and family relationship ends at {partner_satisfaction}%. The week never fully settled on either side.",
       insight: "These weeks often turn on repeated small decisions, not one dramatic mistake." }
   ],
   domestic_labour: [
@@ -2362,32 +2362,19 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
   showScenarioSelect() {
     const scenarios = Object.values(SCENARIO_DEFS);
     const scenarioCopy = {
-      family_planning: {
-        kicker: "Shared future",
-        summary: "Does working from home make a child feel more realistic?"
-      },
-      mental_health: {
-        kicker: "Work pressure",
-        summary: "Can you stay promotion-ready without bringing stress home?"
-      },
-      domestic_labour: {
-        kicker: "Home load",
-        summary: "Does being at home actually shift who carries the week?"
-      },
-      employer: {
-        kicker: "Manager view",
-        summary: "Can flexibility work without trust or performance slipping?"
-      }
+      family_planning: { kicker: "Shared future" },
+      mental_health: { kicker: "Work pressure" },
+      domestic_labour: { kicker: "Home load" },
+      employer: { kicker: "Manager view" }
     };
 
     const cards = scenarios.map((s) => {
       const cardDef = this.getAdjustedScenarioDef(s.id);
-      const copy = scenarioCopy[s.id] || { kicker: "Scenario", summary: cardDef.goal };
+      const copy = scenarioCopy[s.id] || { kicker: "Scenario" };
       return `
         <div class="scenario-card" onclick="game.selectScenario('${s.id}')">
           <span class="scenario-tag ${cardDef.tagClass}">${copy.kicker}</span>
           <p class="scenario-title">${cardDef.title}</p>
-          <p class="scenario-goal">${copy.summary}</p>
         </div>`;
     }).join('');
 
@@ -2422,7 +2409,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
       <div class="screen active">
         <div class="scenario-info">
           <span class="scenario-tag ${this.scenarioDef.tagClass}">Mental Health</span>
-          <h3 style="margin-top:8px;">Play as Daniel for a week.</h3>
+          <h3 style="margin-top:8px;">Meet Daniel before the week begins.</h3>
         </div>
 
         <div class="card">
@@ -2432,15 +2419,16 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
                 <img src="/avatar.PNG" alt="Daniel avatar" style="display:block;width:100%;height:auto;border-radius:14px;">
               </div>
               <p class="char-class-name" style="font-size:20px;margin-bottom:6px;">${this.playerName}</p>
+              <p style="font-size:12px;color:#666;line-height:1.45;">A hybrid-working father trying not to let work swallow the week.</p>
             </div>
 
             <div>
               <p class="label">Who You Play As</p>
               <h2 style="margin-bottom:8px;">${this.playerName}, hybrid-working dad</h2>
               <p style="font-size:14px;color:#555;line-height:1.6;margin-bottom:16px;">
-                ${this.playerName} works full-time as a project manager, and can work from home 2-3 days a week.
+                ${this.playerName} works full-time, and can work from home 2-3 days a week.
                 He and his partner have one young child under age 5. His partner works mostly from the office.
-                He is trying to get promoted as a senior project manager in the company.
+                He is trying to get promoted as a senior engineer in the company.
               </p>
 
               <div style="margin-bottom:18px;">
@@ -2484,7 +2472,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
       },
       mental_health: {
         work_stress: "How much work pressure you are carrying by the end of each choice.",
-        partner_satisfaction: "How far home still feels workable by the end of each choice."
+        partner_satisfaction: "How far family relationship still feels okay by the end of each choice."
       },
       domestic_labour: {
         his_perception: "How much you think you contributed this week.",
@@ -3008,14 +2996,19 @@ ADAPT (make changes like these):
    • CONNECTED / MOSTLY_GOOD: things noticed improving, cautious hope
    • DISCONNECTED / MOSTLY_BAD: partner gone quiet, withdrawn
    • CAUTIOUS / MIXED / START: progress is partial, trust is not settled yet
+5. KEEP IT SHORT:
+   • Do not add new background detail unless it changes the tension
+   • Keep the context box to 1-2 short sentences
+   • You may shorten the choice wording if it becomes clearer and more natural
+   • If you rewrite a choice, keep the trade-off and meaning exactly the same
+   • Prefer plain short choices over explanatory ones
 
 DO NOT CHANGE:
-- The choices — keep their wording and trade-offs identical
 - The time of day — it is ${scene.time}, keep ALL time references consistent with this
 - Any numbers (durations, email counts, temperatures, distances)
 - Character names: use exactly ${this.playerName}, ${this.partnerName}${isEmployer ? `, ${this.employeeName}` : ''}
 - Dilemma difficulty — all choices must feel equally valid regardless of profile
-- Length — match the original
+- Do not make the scene or context longer than the original
 - For family-planning scenes, preserve clarity over atmosphere: if the issue is family-building, trying, pregnancy, or existing parenting pressure, make that concrete without turning it into a formal discussion
 
 Return ONLY valid JSON: {"scene":"...","context":"..."}`;
@@ -3655,6 +3648,10 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
             </div>
           </div>
           <p style="font-size:13px;color:#666;margin-bottom:14px;"><strong>Goal:</strong> ${this.scenarioDef.goal}</p>
+          <div style="background:#fafafa;border:1px solid #ececec;border-radius:12px;padding:12px 14px;margin-bottom:16px;">
+            <p class="label" style="margin-bottom:10px;">This week so far</p>
+            <div id="meter-panel">${this.renderMeters()}</div>
+          </div>
           ${this.renderOutlookCard()}
 
           <p class="scene-text">${this.replaceVars(scene.sceneText)}</p>
@@ -3712,6 +3709,9 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
 
     // Check fail conditions
     const failMsg = this.checkFailConditions();
+
+    const meterPanel = document.getElementById('meter-panel');
+    if (meterPanel) meterPanel.innerHTML = this.renderMeters();
     
     // Hide choices, show signal
     document.getElementById('choices-container').style.display = 'none';
