@@ -483,6 +483,7 @@
 // AI BACKEND CONFIGURATION
 // ============================================================================
 const AI_API_BASE = '';
+const ENABLE_AI_WORDING = false;
 
 async function callAIEndpoint(path, payload) {
   const res = await fetch(`${AI_API_BASE}${path}`, {
@@ -2193,11 +2194,12 @@ class Game {
 
     // Show profile immediately with rule-based title, then upgrade with AI title
     this.showProfile();
-    this.generateAvatarTitle(); // runs in background, updates DOM when ready
+    if (ENABLE_AI_WORDING) this.generateAvatarTitle();
     this.saveProfileRecord();
   }
 
   async generateAvatarTitle() {
+    if (!ENABLE_AI_WORDING) return;
     const d = this.surveyData;
     const prompt = `You're naming a character in a game about working dads' hidden dilemmas. Make it catchy — like a tweet or a film tagline, not an academic description.
 
@@ -2258,7 +2260,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
         <div class="card" style="text-align:center;padding:32px 24px 24px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);">
           <div class="avatar-circle" style="background:${color};margin:0 auto 12px;width:88px;height:88px;font-size:44px;">${animal.emoji}</div>
           <p style="color:rgba(255,255,255,0.6);font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">${this.playerName}</p>
-          <h2 id="ai-char-title" style="color:white;font-size:22px;min-height:32px;">${title}</h2>
+          <h2 id="ai-char-title" data-ready="1" style="color:white;font-size:22px;min-height:32px;">${title}</h2>
           <p id="ai-char-desc" style="color:rgba(255,255,255,0.75);font-size:13px;margin-top:6px;min-height:20px;">${animal.desc}</p>
         </div>
 
@@ -3028,6 +3030,13 @@ Return ONLY valid JSON: {"scene":"..."}`;
     const cacheKey = `${scene.id}_${jobKey}_${d.partnerWfh || ''}_${patternKey}`;
     if (this.sceneCache[cacheKey]) return this.sceneCache[cacheKey];
 
+    if (!ENABLE_AI_WORDING) {
+      const deterministic = this.preAdaptScene(scene);
+      deterministic._aiAdapted = false;
+      this.sceneCache[cacheKey] = deterministic;
+      return deterministic;
+    }
+
     let contextStr = scene.context;
     if (typeof contextStr === 'object') {
       contextStr = contextStr[this.partnerCommute] || contextStr.long || '';
@@ -3611,7 +3620,7 @@ Return ONLY valid JSON: {"scene":"..."}`;
     const progress = ((this.currentIndex) / totalScenes) * 100;
 
     // Show loading state while personalizing
-    if (this.playerJob) {
+    if (this.playerJob && ENABLE_AI_WORDING) {
       this.root.innerHTML = `
         <div class="screen active">
           <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>
