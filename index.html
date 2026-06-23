@@ -2755,7 +2755,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
         sceneText: "Your partner says you have seemed to keep work ahead of them all week and wants to talk before bed. You have not finished a follow-up note for tomorrow that could matter for your promotion.",
         context: "You can do the note now, or you can deal with home first.",
         choices: [
-          { id: "A", main: "Finish the note now.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You turn back to work. The note gets done, but the conversation does not happen tonight.", accumulation: "Work stress down: the note is no longer waiting for tomorrow morning." },
+          { id: "A", main: "Finish the note now.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You turn back to work. The note gets done, but your partner fell asleep.", accumulation: "Work stress down: the note is no longer waiting for tomorrow morning." },
           { id: "B", main: "Leave it until tomorrow and talk now.", effects: { work_stress: +10, partner_satisfaction: +10 }, signal: "You leave the note and stay in the room. The work is still there for tomorrow.", accumulation: "Work stress up: now the morning will start with something unfinished." }
         ]
       };
