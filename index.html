@@ -585,6 +585,8 @@ const METER_FEEDBACK_LABELS = {
   her_wellbeing: "Partner wellbeing",
   child_wellbeing: "Child wellbeing",
   family_time: "Time together",
+  work_stress: "Work stress",
+  partner_satisfaction: "Partner satisfaction",
   his_perception: "Your view",
   her_perception: "Her view",
   actual_split: "Your share",
@@ -604,6 +606,8 @@ const METER_FEEDBACK_PHRASES = {
   her_wellbeing: { up: "She got some room", down: "She took a hit" },
   child_wellbeing: { up: "Home felt easier", down: "Your child felt it" },
   family_time: { up: "More time together", down: "Time together slipped" },
+  work_stress: { up: "Work pressure eased", down: "Work pressure rose" },
+  partner_satisfaction: { up: "Home felt steadier", down: "Home felt worse" },
   his_perception: { up: "You felt more on top of it", down: "You felt less on top of it" },
   her_perception: { up: "She saw more of it", down: "She saw less of it" },
   actual_split: { up: "You took on more", down: "You took on less" },
@@ -648,22 +652,20 @@ const SCENARIO_DEFS = {
     id: "mental_health",
     title: "Mental Health",
     tagClass: "tag-2",
-    goal: "Get the work done without burning yourself or your family out.",
-    description: "⚠️ This scenario has an interconnection mechanic: when your wellbeing drops, your partner's drops too. When hers drops, your child notices. Burnout is contagious. The goal is sustainable balance — not perfect, just sustainable.",
+    goal: "Try to get the promotion without letting work stress or your relationship tip too far.",
+    description: "A week of small work-home trade-offs. The pressure is not just the work itself, but what it might mean for promotion if you get it wrong.",
     meters: [
-      // Research baseline: working fathers' wellbeing ~average; working mothers' slightly lower; dual-earner family time below average
-      { id: "his_wellbeing", name: "Your wellbeing", color: "meter-purple", initial: 50 },
-      { id: "her_wellbeing", name: "Partner's wellbeing", color: "meter-coral", initial: 45 },
-      { id: "child_wellbeing", name: "Child's wellbeing", color: "meter-amber", initial: 70 },
-      { id: "family_time", name: "Quality time together", color: "meter-teal", initial: 35 }
+      { id: "work_stress", name: "Work stress", color: "meter-amber", initial: 48, inverted: true },
+      { id: "partner_satisfaction", name: "Partner satisfaction", color: "meter-teal", initial: 58 }
     ],
     failConditions: [
-      { meter: "his_wellbeing", threshold: 20, below: true, message: "Your wellbeing hits 20% — you've burnt out. Your body made the decision your mind wouldn't." },
-      { meter: "her_wellbeing", threshold: 20, below: true, message: "Your partner's wellbeing hits 20% — she's at her limit. The load was too much for too long." },
-      { meter: "child_wellbeing", threshold: 30, below: true, message: "Your child's wellbeing drops below 30% — they've been absorbing the household stress. It's showing." }
+      { meter: "work_stress", threshold: 85, message: "Work stress hits 85% — the whole week starts feeling like a promotion test you cannot switch off from." },
+      { meter: "partner_satisfaction", threshold: 20, below: true, message: "Partner satisfaction drops below 20% — at home, this no longer feels like a one-off bad week." }
     ],
-    winCondition: { allAbove: 50, message: "Sustainable balance. Not perfect — but everyone is okay. That's enough." },
-    mechanic: "interconnection"
+    winCondition: { allOf: [
+      { meter: "work_stress", threshold: 65, below: false, inverted: true },
+      { meter: "partner_satisfaction", threshold: 45 }
+    ], message: "You stayed in the promotion race without letting the week slide too far at home." }
   },
   
   domestic_labour: {
@@ -754,123 +756,28 @@ const SCENARIOS = {
     {
       id: "mh_1",
       day: "Monday",
-      time: "9:15pm",
-      sceneText: "You've been online since 9am. No breaks longer than ten minutes. Your child is asleep. {partnerName} is already in bed, still awake, and asks if you're coming up.",
-      context: "32 emails came in after 6pm. None of them has to be answered tonight. Clearing the short ones would take about 20 minutes. Clearing the lot would take about an hour.",
+      time: "6:15pm",
+      sceneText: "It is your child's birthday dinner. You promised {partnerName} you would be there on time. Just before you log off, an urgent piece of work comes in that needs to reach the client before 8am tomorrow.",
       choices: [
         {
           id: "A",
-          main: "Finish all the emails, then go up to bed.",
-          effects: { his_wellbeing: -15, her_wellbeing: -10, child_wellbeing: -5, family_time: -10 },
-          signal: "The hour goes the way these hours usually do. By the time you get upstairs, she is already asleep. The room is dark and the laptop is finally shut, but you do not feel finished in any useful way.",
-          accumulation: "Work took the last part of the day again."
+          main: "Do it now.",
+          effects: { work_stress: -10, partner_satisfaction: -10 },
+          signal: "You get the work moving, but dinner goes ahead without you. By the time you finally join them, the candles are gone.",
+          accumulation: "Work stress down: at least tonight's task is contained."
         },
         {
           id: "B",
-          main: "Close the laptop now and go up while she is still awake.",
-          effects: { his_wellbeing: +12, her_wellbeing: +10, child_wellbeing: +2, family_time: +10 },
-          signal: "When you get into bed, she is still awake. You talk for a few minutes before sleep. The inbox is not clear, but the evening is not gone either.",
-          accumulation: "You kept one work boundary and one home boundary, even if neither was perfect."
-        },
-        {
-          id: "C",
-          main: "Clear the short emails and go up to bed.",
-          effects: { his_wellbeing: +4, her_wellbeing: +6, child_wellbeing: +2, family_time: +6 },
-          signal: "She shifts over when you get in. You are asleep fast. The inbox is still there for the morning, but at least the night ends like a night.",
-          accumulation: "WFH only helps if you use the control it gives you."
+          main: "Leave it until tomorrow morning.",
+          effects: { work_stress: +10, partner_satisfaction: +10 },
+          signal: "You make the dinner, but the task sits at the back of your mind all evening.",
+          accumulation: "Work stress up: you keep wondering whether leaving it will be noticed."
         }
       ]
     },
-    {
-      id: "mh_2",
-      day: "Wednesday",
-      time: "8:02am",
-      sceneText: "Your child can't find their shoes. They've been crying for eight minutes. {partnerName} is trying to get out of the door for a 9am appointment. You have a 9am team check-in.",
-      context: "The check-in is a regular team call. People notice when someone joins late, especially your manager. {partnerName}'s appointment can be moved to the afternoon, but only with hassle.",
-      choices: [
-        {
-          id: "A",
-          main: "\"I'm sorry but I've got the check-in meeting soon. Can you sort this out?\"",
-          effects: { his_wellbeing: -5, her_wellbeing: -15, child_wellbeing: -12, family_time: -5 },
-          signal: "You close the study door and join on time. From the other room you can hear the pitch of the morning getting worse before it settles. At lunch, {partnerName} is brief with you without quite saying why.",
-          accumulation: "The meeting started on time. The rest of the house had to move around it."
-        },
-        {
-          id: "B",
-          main: "Sort the shoes properly and message the team that you are sorry but you'll be late because you have to help your child.",
-          effects: { his_wellbeing: -6, her_wellbeing: +10, child_wellbeing: +15, family_time: +10 },
-          signal: "It takes eleven minutes. The shoes turn up behind the hall bench. You join the call at 9:11. Someone else has already started the first item. Nobody makes a thing of it.",
-          accumulation: "WFH helped because you used the flexibility, not because the morning was easy."
-        },
-        {
-          id: "C",
-          main: "Try to calm it down quickly and still slip into the check-in on time without explaining why.",
-          effects: { his_wellbeing: -8, her_wellbeing: +4, child_wellbeing: +8, family_time: +4 },
-          signal: "You half-handle the shoes and half-watch the clock. The crying stops enough for the morning to move again. You join on time, but already tense.",
-          accumulation: "You kept work smooth, but carried the strain into both rooms."
-        }
-      ]
-    },
-    {
-      id: "mh_3",
-      day: "Thursday",
-      time: "4:45pm",
-      sceneText: "Thursday, 4:45pm. Your manager says that from next week the team will be expected in the office full-time to improve productivity and collaboration. Your usual WFH days are the days you normally do pickup. {partnerName} is in the kitchen when you read the message.",
-      context: "The change starts next week. If nothing moves at work, the week at home will have to move instead.",
-      choices: [
-        {
-          id: "A",
-          main: "Reply 'Okay' in the team chat, then tell {partnerName} she'll need to cover pickup from next week.",
-          effects: { his_wellbeing: -8, her_wellbeing: -10, child_wellbeing: -8, family_time: -10 },
-          signal: "She goes quiet when you tell her. Not angry, just already doing the maths in her head.",
-          accumulation: "The policy changed at work. The cost landed at home."
-        },
-        {
-          id: "B",
-          main: "Message your manager that full-time office working will not work for you because your home days are the days you do pickup.",
-          effects: { his_wellbeing: +6, her_wellbeing: +8, child_wellbeing: +10, family_time: +12 },
-          signal: "You stare at the message for a second before sending it. It is not comfortable, but once it is out of your hands, the week feels slightly less like something happening to you.",
-          accumulation: "Control over time only helps if you are willing to claim it."
-        },
-        {
-          id: "C",
-          main: "Say okay for now and spend the evening trying to work out who could cover pickup and what else would have to move.",
-          effects: { his_wellbeing: -4, her_wellbeing: -4, child_wellbeing: -3, family_time: -4 },
-          signal: "You leave the message there and start talking through options with {partnerName}. Nothing has broken yet, but the whole evening feels more provisional.",
-          accumulation: "You kept work easy in the moment, but brought the uncertainty home with you."
-        }
-      ]
-    },
-    {
-      id: "mh_4",
-      day: "Friday",
-      time: "8:20pm",
-      sceneText: "Friday, 8:20pm. You look wiped out after the week. The laptop is shut, but your hand is already moving back toward it to clear a few last things. {partnerName} notices. \"I thought you were done for work today?\"",
-      context: "The week has already taken a lot out of you. You could leave it there. You could also let work back in one more time.",
-      choices: [
-        {
-          id: "A",
-          main: "Say you just want to clear a few more things before you call it a day.",
-          effects: { his_wellbeing: -10, her_wellbeing: -6, child_wellbeing: -4, family_time: -8 },
-          signal: "She does not say much after that. Twenty minutes becomes longer, the way it usually does. By the time you shut it again, the evening feels used up.",
-          accumulation: "The week was already heavy. You still let work take the last part of it."
-        },
-        {
-          id: "B",
-          main: "Say, \"You're right,\" and leave the laptop shut.",
-          effects: { his_wellbeing: +12, her_wellbeing: +10, child_wellbeing: +4, family_time: +10 },
-          signal: "She sits back down beside you. Nothing dramatic changes, but the night stops feeling like an extension of the workday.",
-          accumulation: "Stopping was not laziness. It was a boundary."
-        },
-        {
-          id: "C",
-          main: "Check quickly on your phone instead. It should only take a minute, and you can still relax with her.",
-          effects: { his_wellbeing: -4, her_wellbeing: -2, family_time: -2, child_wellbeing: -2 },
-          signal: "You stay in the room, but not fully in it. She notices that too. The laptop stays shut, but work still gets in.",
-          accumulation: "This is the compromise that keeps the tiredness going."
-        }
-      ]
-    }
+    { id: "mh_2", day: "Tuesday", time: "3:00pm", sceneText: "", choices: [] },
+    { id: "mh_3", day: "Thursday", time: "7:00am", sceneText: "", choices: [] },
+    { id: "mh_4", day: "Friday", time: "11:45am", sceneText: "", choices: [] }
   ],
   
   domestic_labour: [
@@ -1416,30 +1323,30 @@ const ENDINGS = {
   ],
   mental_health: [
     { id: "win",
-      condition: (m) => m.his_wellbeing >= 50 && m.her_wellbeing >= 50 && m.child_wellbeing >= 50 && m.family_time >= 40,
-      style: "ending-success", title: "Sustainable Balance",
-      desc: "Sunday evening. You're all in the same room, just being together. Your wellbeing is at {his_wellbeing}%. {partnerName}'s is at {her_wellbeing}%. Your child's is at {child_wellbeing}%. Not perfect. But no one is burning out, breaking down, or shutting themselves away. That's what sustainable looks like.",
-      insight: "Research on dual-earner couples shows burnout is contagious — but so is recovery. When fathers actively reduce their own overwork, it creates space for partners and children to stabilise too." },
-    { id: "fail_his",
-      condition: (m) => m.his_wellbeing <= 20,
-      style: "ending-danger", title: "You Hit the Wall",
-      desc: "Your wellbeing dropped to {his_wellbeing}%. The body made the decision the calendar wouldn't. Four evenings of late working, two early mornings, one weekend that wasn't really a weekend. You didn't notice it happening until you couldn't function normally. The emails are still there. The family still needs things. But right now, you can't give them.",
-      insight: "Male burnout in dual-earner households is often preceded by 'always available' work norms — the belief that logging off is a risk, not a right." },
-    { id: "fail_her",
-      condition: (m) => m.her_wellbeing <= 20,
-      style: "ending-danger", title: "They Are Exhausted",
-      desc: "{partnerName}'s wellbeing reached {her_wellbeing}%. She absorbed the morning crises, the school logistics, the emotional labour — while also working. The load wasn't just unequal. It was invisible to you, which made it worse. She's not angry. She's too tired to be angry. She just needs things to actually change.",
-      insight: "When fathers work from home but don't shift the domestic load, mothers' wellbeing declines — sometimes faster than if the father was simply not there." },
-    { id: "fail_child",
-      condition: (m) => m.child_wellbeing <= 30,
-      style: "ending-warning", title: "Children Were Watching",
-      desc: "Your child's wellbeing dropped to {child_wellbeing}%. Children read the emotional temperature of a household before they can name it. The mornings that were too rushed, the evenings when both adults were somewhere else, the Saturday when neither parent was fully present. It didn't arrive as a crisis. It arrived as: quieter at dinner, slower to get up, a teacher mentioning something.",
-      insight: "Children's wellbeing in dual-earner households is strongly predicted by parental stress spillover — particularly maternal stress, which itself responds to how the domestic load is shared." },
+      condition: (m) => m.work_stress < 65 && m.partner_satisfaction >= 45,
+      style: "ending-success", title: "Promotion Still Feels Within Reach",
+      desc: "You got through the week with work stress at {work_stress}% and partner satisfaction at {partner_satisfaction}%. Promotion still feels possible, and home did not have to absorb every cost of getting there.",
+      insight: "The pressure here is often about perceived visibility rather than confirmed punishment. That is why small work-home moments can carry so much weight." },
+    { id: "partial_success",
+      condition: (m) => m.work_stress < 70 && m.partner_satisfaction >= 20,
+      style: "ending-warning", title: "You May Still Get It, But At A Cost",
+      desc: "You may still be in the running, but the week did damage. Work stress ended at {work_stress}%. Partner satisfaction ended at {partner_satisfaction}%. At home, this no longer feels like one difficult week.",
+      insight: "When work pressure keeps winning small moments at home, the cost often shows up first as distance rather than a dramatic collapse." },
+    { id: "fail_relationship",
+      condition: (m) => m.partner_satisfaction < 20,
+      style: "ending-danger", title: "Home Took Too Much Of The Hit",
+      desc: "Partner satisfaction dropped to {partner_satisfaction}%. Whatever happens with promotion, home does not feel stable by the end of the week. Too many promises got moved, cut short, or pushed back behind work.",
+      insight: "Relationship strain often builds through repeated small disappointments rather than one decisive argument." },
+    { id: "fail_stress",
+      condition: (m) => m.work_stress >= 85,
+      style: "ending-danger", title: "Work Took Over The Week",
+      desc: "Work stress reached {work_stress}%. The week never stopped feeling like a test. Even when you were at home, work was still deciding what the next hour felt like.",
+      insight: "Promotion pressure can become especially hard to switch off when the standard is felt rather than clearly stated." },
     { id: "progress",
       condition: () => true,
-      style: "ending-neutral", title: "Holding On",
-      desc: "Your wellbeing: {his_wellbeing}%. {partnerName}'s: {her_wellbeing}%. Your child's: {child_wellbeing}%. You're managing. Not thriving — managing. The week had good moments and expensive ones. No one collapsed, but no one fully recovered either. One bad week from now, the picture could look different. The question isn't whether this week was okay. It's whether you can keep doing this.",
-      insight: "Many working parents describe weeks like this as manageable only as long as nothing else goes wrong. The strain does not always arrive as a crisis. Often it builds through small pressures that keep repeating." }
+      style: "ending-neutral", title: "Still In The Balance",
+      desc: "Work stress finished at {work_stress}%. Partner satisfaction finished at {partner_satisfaction}%. You are still in it on both sides, but neither side feels settled yet.",
+      insight: "These weeks often turn on repeated small decisions, not one dramatic mistake." }
   ],
   domestic_labour: [
     { id: "win",
@@ -1554,7 +1461,54 @@ class Game {
     this.sceneMetersBefore = null;
     this.currentEndingId = null;
     this.surveyStartedAt = Date.now();
-    this.showTitleScreen();
+    this.applyDemoProfileDefaults();
+    this.showScenarioSelect();
+  }
+
+  applyDemoProfileDefaults() {
+    if (this.surveyData) return;
+
+    this.playerName = 'Daniel';
+    this.partnerName = 'Sarah';
+    this.partnerCommute = 'medium';
+    this.partnerPronouns = 'she';
+    this.surveyData = {
+      age: '30-39',
+      education: 'degree',
+      children: 'no_want',
+      familyPlan: 'want_not_trying',
+      industry: '8',
+      occupation: '2',
+      wfh: 'hybrid',
+      partnerWfh: 'full-time,full_office',
+      att_father: '5',
+      att_stigma: '3',
+      att_hours: '4',
+    };
+    this.surveyJobLabel = 'professional in education';
+    this.wfhArrangement = 'hybrid';
+  }
+
+  applyMentalHealthPreset() {
+    this.playerName = 'Daniel';
+    this.partnerName = 'your partner';
+    this.partnerCommute = 'medium';
+    this.partnerPronouns = 'she';
+    this.surveyData = {
+      age: '30-39',
+      education: 'degree',
+      children: 'yes_young',
+      familyPlan: '',
+      industry: '8',
+      occupation: '2',
+      wfh: 'hybrid',
+      partnerWfh: 'full-time,full_office',
+      att_father: '5',
+      att_stigma: '3',
+      att_hours: '4',
+    };
+    this.surveyJobLabel = 'professional in education';
+    this.wfhArrangement = '2-3 days WFH';
   }
 
   async postJSON(path, payload, opts = {}) {
@@ -1710,22 +1664,6 @@ class Game {
         goal: familyCopy.goal
       };
     }
-    if (scenarioId === 'mental_health' && this.isNoChildrenProfile()) {
-      return {
-        ...def,
-        goal: "Get the work done without burning yourself or your relationship out.",
-        description: "⚠️ This scenario has an interconnection mechanic: when your wellbeing drops, your partner's drops too. When both of you are running on empty, the whole household atmosphere changes. The goal is sustainable balance — not perfect, just sustainable.",
-        meters: def.meters.map(m => m.id === 'child_wellbeing'
-          ? { ...m, name: "Household atmosphere" }
-          : m
-        ),
-        failConditions: def.failConditions.map(c => c.meter === 'child_wellbeing'
-          ? { ...c, message: "Household atmosphere drops below 30% — the stress is everywhere now. It's showing." }
-          : c
-        ),
-        winCondition: { ...def.winCondition, message: "Sustainable balance. Not perfect — but both of you, and the house around you, are okay." }
-      };
-    }
     return def;
   }
   
@@ -1838,10 +1776,8 @@ class Game {
     }
     if (this.scenarioType === 'mental_health') {
       return avg([
-        this.meters.his_wellbeing ?? 50,
-        this.meters.her_wellbeing ?? 50,
-        this.meters.child_wellbeing ?? 50,
-        this.meters.family_time ?? 50
+        100 - (this.meters.work_stress ?? 50),
+        this.meters.partner_satisfaction ?? 50
       ]);
     }
     if (this.scenarioType === 'domestic_labour') {
@@ -1877,10 +1813,10 @@ class Game {
         { label: "more realistic", note: "This week is helping it feel more doable, not just more discussed.", tone: "good" }
       ],
       mental_health: [
-        { label: "running too hot", note: "The strain is spreading through the house now.", tone: "danger" },
-        { label: "stretched thin", note: "You are getting through it, but not comfortably.", tone: "warning" },
-        { label: "holding", note: "There is still pressure, but it has not taken over the week.", tone: "steady" },
-        { label: "steady enough", note: "The week still has some room to breathe.", tone: "good" }
+        { label: "close to breaking", note: "Too much of the week is being decided by work pressure.", tone: "danger" },
+        { label: "under strain", note: "Both work and home still feel costly to hold together.", tone: "warning" },
+        { label: "still in play", note: "The week is not easy, but neither side has tipped too far yet.", tone: "steady" },
+        { label: "holding up", note: "The promotion pressure is real, but home is still standing up to it.", tone: "good" }
       ],
       domestic_labour: [
         { label: "landing on her", note: "Home is still defaulting back onto her by the end of the day.", tone: "danger" },
@@ -1928,10 +1864,8 @@ class Game {
     }
     if (this.scenarioType === 'mental_health') {
       const pressures = [
-        { text: "Most under pressure: you are running low.", value: this.meters.his_wellbeing ?? 50 },
-        { text: "Most under pressure: she is carrying too much.", value: this.meters.her_wellbeing ?? 50 },
-        { text: "Most under pressure: home is feeling it too.", value: this.meters.child_wellbeing ?? 50 },
-        { text: "Most under pressure: there is not much real time left together.", value: this.meters.family_time ?? 50 }
+        { text: "Most under pressure: work is still sitting too close to the surface.", value: 100 - (this.meters.work_stress ?? 50) },
+        { text: "Most under pressure: home is starting to feel less steady.", value: this.meters.partner_satisfaction ?? 50 }
       ];
       return pressures.sort((a, b) => a.value - b.value)[0].text;
     }
@@ -1977,17 +1911,7 @@ class Game {
   }
   
   showTitleScreen() {
-    this.root.innerHTML = `
-      <div class="screen active">
-        <div class="card" style="text-align: center; padding: 48px 24px;">
-          <h1 style="font-size: 28px;">${GAME_CONFIG.title}</h1>
-          <p class="subtitle" style="font-size: 16px;">${GAME_CONFIG.subtitle}</p>
-          <p style="font-size: 13px; color: #888; margin: 24px 0;">${GAME_CONFIG.credit}</p>
-          <button class="btn btn-primary" style="max-width: 200px; margin: 0 auto;" onclick="game.showSurvey()">Start</button>
-          <p style="font-size: 11px; color: #aaa; margin-top: 20px;">${GAME_CONFIG.version}</p>
-        </div>
-      </div>
-    `;
+    this.showScenarioSelect();
   }
   
   updateAvatar() {
@@ -2436,38 +2360,42 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
   }
 
   showScenarioSelect() {
-    let scenarios = Object.values(SCENARIO_DEFS);
-    const age = this.surveyData?.age;
-    const children = this.surveyData?.children;
-    const familyContext = this.getFamilyContext();
-    // Hide Family Planning for 60+, those who explicitly don't want children,
-    // or profiles that have not given enough information for that branch.
-    if (age === '60+' || children === 'no_do_not_want' || familyContext === 'no_family_plan' || familyContext === 'unspecified') {
-      scenarios = scenarios.filter(s => s.id !== 'family_planning');
-    }
+    const scenarios = Object.values(SCENARIO_DEFS);
+    const scenarioCopy = {
+      family_planning: {
+        kicker: "Shared future",
+        summary: "Does working from home make a child feel more realistic?"
+      },
+      mental_health: {
+        kicker: "Work pressure",
+        summary: "Can you stay promotion-ready without bringing stress home?"
+      },
+      domestic_labour: {
+        kicker: "Home load",
+        summary: "Does being at home actually shift who carries the week?"
+      },
+      employer: {
+        kicker: "Manager view",
+        summary: "Can flexibility work without trust or performance slipping?"
+      }
+    };
 
-    const cards = scenarios.map((s, i) => {
+    const cards = scenarios.map((s) => {
       const cardDef = this.getAdjustedScenarioDef(s.id);
-      const isFatherScenario = ['family_planning', 'mental_health', 'domestic_labour'].includes(s.id);
-      const perspectiveTag = isFatherScenario
-        ? `<p style="font-size:11px;color:#856404;background:#fffbeb;padding:4px 8px;border-radius:6px;margin-top:6px;">👤 You play as a working father</p>`
-        : `<p style="font-size:11px;color:#4A90D9;background:#eef6ff;padding:4px 8px;border-radius:6px;margin-top:6px;">👤 You play as a manager</p>`;
+      const copy = scenarioCopy[s.id] || { kicker: "Scenario", summary: cardDef.goal };
       return `
         <div class="scenario-card" onclick="game.selectScenario('${s.id}')">
-          <span class="scenario-tag ${cardDef.tagClass}">Scenario ${i + 1}</span>
+          <span class="scenario-tag ${cardDef.tagClass}">${copy.kicker}</span>
           <p class="scenario-title">${cardDef.title}</p>
-          <p class="scenario-goal">Goal: ${cardDef.goal}</p>
-          ${perspectiveTag}
+          <p class="scenario-goal">${copy.summary}</p>
         </div>`;
     }).join('');
 
     this.root.innerHTML = `
       <div class="screen active">
         <div class="card">
-          <button onclick="game.showProfile()" style="background:none;border:none;color:#888;font-size:13px;cursor:pointer;margin-bottom:10px;">← Back to profile</button>
-          <h2>⚔️ Choose your quest</h2>
-          <p class="subtitle">Each scenario has 4 scenes. Pick one and see how the week plays out.</p>
-          <p style="font-size:13px;color:#555;background:#f0f7ff;padding:10px 14px;border-radius:8px;margin-bottom:16px;border-left:3px solid #007AFF;">The first three scenarios are currently designed around a working father's experience in a heterosexual relationship, because the game is based on research evidence from those households. Future versions may expand to other family types as more evidence becomes available. The Employer scenario is more neutral.</p>
+          <h1>${GAME_CONFIG.title}</h1>
+          <p class="subtitle">Choose one scenario. Four scenes each.</p>
           <div class="scenario-grid">${cards}</div>
         </div>
       </div>
@@ -2475,9 +2403,79 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
   }
   
   selectScenario(scenarioId) {
+    if (scenarioId === 'mental_health') {
+      this.applyMentalHealthPreset();
+    } else {
+      this.applyDemoProfileDefaults();
+    }
     this.scenarioType = scenarioId;
     this.scenarioDef = this.getAdjustedScenarioDef(scenarioId);
+    if (scenarioId === 'mental_health') {
+      this.showMentalHealthCharacterIntro();
+      return;
+    }
     this.showGoalIntro();
+  }
+
+  showMentalHealthCharacterIntro() {
+    this.root.innerHTML = `
+      <div class="screen active">
+        <div class="scenario-info">
+          <span class="scenario-tag ${this.scenarioDef.tagClass}">Mental Health</span>
+          <h3 style="margin-top:8px;">Meet Daniel before the week begins.</h3>
+        </div>
+
+        <div class="card">
+          <div class="char-create-wrap" style="grid-template-columns:220px 1fr;align-items:stretch;">
+            <div class="char-avatar-panel" style="top:0;display:flex;flex-direction:column;justify-content:center;padding:16px;">
+              <div style="width:100%;border-radius:18px;background:linear-gradient(180deg,#f5f7fb 0%,#e9eef7 100%);padding:10px;margin-bottom:12px;">
+                <img src="avatar.PNG" alt="Daniel avatar" style="display:block;width:100%;height:auto;border-radius:14px;">
+              </div>
+              <p class="char-class-name" style="font-size:20px;margin-bottom:6px;">${this.playerName}</p>
+              <p style="font-size:12px;color:#666;line-height:1.45;">A hybrid-working father trying not to let work swallow the week.</p>
+            </div>
+
+            <div>
+              <p class="label">Who You Play As</p>
+              <h2 style="margin-bottom:8px;">${this.playerName}, hybrid-working dad</h2>
+              <p style="font-size:14px;color:#555;line-height:1.6;margin-bottom:16px;">
+                ${this.playerName} works full-time in a hybrid role, from home 2-3 days a week.
+                He and his partner have one young child. His partner works mostly from the office.
+                This week, he is trying to look ready for promotion without letting that pressure spill across home.
+              </p>
+
+              <div style="margin-bottom:18px;">
+                <span class="char-trait-tag active">Promotion pressure</span>
+                <span class="char-trait-tag active">2-3 days WFH</span>
+                <span class="char-trait-tag active">One young child</span>
+                <span class="char-trait-tag active">Partner office-based</span>
+                <span class="char-trait-tag active">Full-time professional role</span>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;">
+                <div style="background:#f8f8f8;border-radius:10px;padding:14px 16px;">
+                  <p class="label" style="margin-bottom:8px;">Work</p>
+                  <p style="font-size:14px;color:#444;line-height:1.5;">A full-time hybrid role with enough flexibility to help, but enough pressure to spill over.</p>
+                </div>
+                <div style="background:#f8f8f8;border-radius:10px;padding:14px 16px;">
+                  <p class="label" style="margin-bottom:8px;">Home</p>
+                  <p style="font-size:14px;color:#444;line-height:1.5;">A partner, a young child, and a week where small work choices can change the mood at home.</p>
+                </div>
+              </div>
+
+              <div style="background:#f8f8f8;border-radius:10px;padding:14px 16px;margin-bottom:18px;">
+                <p class="label" style="margin-bottom:8px;">What Matters This Week</p>
+                <p style="font-size:14px;color:#444;line-height:1.55;">Daniel wants to stay on track for promotion, but if the stress keeps spilling over, home starts paying the price.</p>
+              </div>
+
+              <button class="btn btn-primary" onclick="game.startScenario()">Start Daniel's week</button>
+              <button onclick="game.showGoalIntro()" style="background:none;border:none;color:#888;font-size:13px;cursor:pointer;margin-top:10px;display:block;width:100%;text-align:center;">See scenario details</button>
+              <button onclick="game.showScenarioSelect()" style="background:none;border:none;color:#888;font-size:13px;cursor:pointer;margin-top:6px;display:block;width:100%;text-align:center;">← Back to scenarios</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
   }
 
   showGoalIntro() {
@@ -2485,9 +2483,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
     const def = this.scenarioDef;
     const scenarioGoalHelp = {
       family_planning: "This only works if work feels steady enough, things between you feel steady enough, and she is not carrying more and more of it alone.",
-      mental_health: noChildren
-        ? "It is not just about getting through work. It is about whether the strain follows you home and changes the whole feel of the week."
-        : "It is not just about getting through work. It is about whether the strain follows you home and changes things for everyone else too.",
+      mental_health: "The pressure is not just the work itself. It is what you fear it might mean for promotion if you get it wrong, and what that pressure costs at home.",
       domestic_labour: "It is not only about doing jobs. It is about whether the load actually shifts, and whether it stays shifted when work pushes back in.",
       employer: "Keeping a good employee is not enough on its own. The arrangement has to work, feel fair, and not fall apart the first time things get busy."
     };
@@ -2499,12 +2495,8 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
         career: "If work starts feeling shaky, having a child can feel riskier."
       },
       mental_health: {
-        his_wellbeing: "If you are running on empty, it spills into everything else.",
-        her_wellbeing: "If too much strain lands on her, the whole week gets harder.",
-        child_wellbeing: noChildren
-          ? "Stress changes how the whole home feels, even when nobody says much."
-          : "Children notice the mood of a house long before adults talk about it.",
-        family_time: "A week can function on paper and still leave no real time for each other."
+        work_stress: "How much work pressure you are carrying by the end of each choice.",
+        partner_satisfaction: "How far home still feels workable by the end of each choice."
       },
       domestic_labour: {
         his_perception: "How much you think you contributed this week.",
@@ -2541,12 +2533,10 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
         <p style="font-size:13px;color:#555;line-height:1.5;"><strong>Your view of your share:</strong> how much you think you contributed. <strong>Your partner's view of your share:</strong> how much she feels you contributed. Both can differ without either of you feeling dishonest. <strong>Planning and remembering</strong> tracks how much of the noticing, organising, and keeping track came from you.</p>
       </div>` : '';
 
-    const interconnectionNote = def.mechanic === 'interconnection' ? `
+    const interconnectionNote = def.id === 'mental_health' ? `
       <div style="background:#fff8e1;border-left:4px solid #DAA520;padding:12px 14px;border-radius:0 8px 8px 0;margin-bottom:16px;">
-        <p style="font-size:12px;color:#856404;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;">⚡ Interconnection mechanic</p>
-        <p style="font-size:13px;color:#555;line-height:1.5;">${noChildren
-          ? `When <strong>your</strong> wellbeing drops, your partner's drops too. When both of you are running on empty, the whole household atmosphere changes. Burnout spreads.`
-          : `When <strong>your</strong> wellbeing drops, your partner's drops too. When <strong>her</strong> wellbeing drops, your child notices. Burnout spreads.`} Managing yourself is part of managing everyone.</p>
+        <p style="font-size:12px;color:#856404;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;">⚡ What the bars mean here</p>
+        <p style="font-size:13px;color:#555;line-height:1.5;">Work stress reflects perceived risk at work, not confirmed punishment. Partner satisfaction tracks whether home still feels steady, or whether work keeps taking the bigger share.</p>
       </div>` : '';
 
     const familyPlanningNote = def.id === 'family_planning' ? `
@@ -2582,7 +2572,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
           <ul style="padding-left:16px;margin-bottom:20px;">${failList}</ul>
 
           <p style="font-size:13px;color:#888;margin-bottom:20px;">There is no single right answer. Every choice has trade-offs.</p>
-          <button class="btn btn-primary" onclick="game.showSetup()">Set up my scenario →</button>
+          <button class="btn btn-primary" onclick="game.startScenario()">Start scenario</button>
           <button onclick="game.showScenarioSelect()" style="background:none;border:none;color:#888;font-size:13px;cursor:pointer;margin-top:10px;display:block;width:100%;text-align:center;">← Choose a different scenario</button>
         </div>
       </div>
@@ -2648,9 +2638,8 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
       workIntrusionScore: 0,
       weekPattern: 'START',        // 'DISCONNECTED' | 'CAUTIOUS' | 'CONNECTED'
       // Mental-health state
-      mentalBoundaryScore: 0,
-      mentalWorkSpillScore: 0,
-      mentalCompromiseScore: 0,
+      mentalHomeDebt: 0,
+      mentalWorkDebt: 0,
       // Family context (derived from survey children field)
       familyContext: this.getFamilyContext(),
       partnerEmployment: (() => {
@@ -2750,247 +2739,123 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
   }
 
   getMentalQ1() {
-    if (!this.isNoChildrenProfile()) return SCENARIOS.mental_health[0];
-    return {
-      ...SCENARIOS.mental_health[0],
-      sceneText: "You've been online since 9am. No breaks longer than ten minutes. {partnerName} is already in bed, still awake, and asks if you're coming up.",
-      context: "32 emails came in after 6pm. None of them has to be answered tonight. Clearing the short ones would take about 20 minutes. Clearing the lot would take about an hour.",
-      choices: [
-        {
-          id: "A",
-          main: "Finish all the emails, then go up to bed.",
-          effects: { his_wellbeing: -15, her_wellbeing: -10, child_wellbeing: -8, family_time: -10 },
-          signal: "The hour goes the way these hours usually do. By the time you get upstairs, she is already asleep. The room is dark and the laptop is finally shut, but you do not feel finished in any useful way.",
-          accumulation: "Work took the last part of the day again."
-        },
-        {
-          id: "B",
-          main: "Clear the short emails, then go up while she is still awake.",
-          effects: { his_wellbeing: +4, her_wellbeing: +10, child_wellbeing: +8, family_time: +10 },
-          signal: "When you get into bed, she is still awake. You talk for a few minutes before sleep. The inbox is not clear, but the evening is not gone either.",
-          accumulation: "You kept one work boundary and one home boundary, even if neither was perfect."
-        },
-        {
-          id: "C",
-          main: "Close the laptop now and go up to bed.",
-          effects: { his_wellbeing: +12, her_wellbeing: +6, child_wellbeing: +4, family_time: +6 },
-          signal: "She shifts over when you get in. You are asleep fast. The inbox is still there for the morning, but at least the night ends like a night.",
-          accumulation: "WFH only helps if you use the control it gives you."
-        }
-      ]
-    };
+    return SCENARIOS.mental_health[0];
   }
 
   getMentalQ2() {
-    const partnerHome = ['na','not_working'].includes(this.surveyData?.partnerWfh || '');
-    if (!this.isNoChildrenProfile()) {
-      if (partnerHome) {
-        return {
-          ...SCENARIOS.mental_health[1],
-          sceneText: "Your child can't find their shoes. They've been crying for eight minutes. {partnerName} has already been trying to get the morning moving on her own. You have a 9am team check-in.",
-          context: "The check-in is a regular team call. People notice when someone joins late, especially your manager. The school or nursery run still has to happen.",
-          choices: [
-            {
-              id: "A",
-              main: "\"I've got the check-in in a minute. Can you sort this one?\"",
-              effects: { his_wellbeing: -5, her_wellbeing: -15, child_wellbeing: -12, family_time: -5 },
-              signal: "You close the study door and join on time. From the other side you can hear the pitch of the morning getting worse before it settles. At lunch, {partnerName} is brief with you without quite saying why.",
-              accumulation: "The meeting started on time. The rest of the house had to move around it."
-            },
-            {
-              id: "B",
-              main: "Sort the shoes properly and message the team that you'll be late because your child needs you.",
-              effects: { his_wellbeing: -6, her_wellbeing: +10, child_wellbeing: +15, family_time: +10 },
-              signal: "It takes eleven minutes. The shoes turn up behind the hall bench. You join the call at 9:11. Someone else has already started the first item. Nobody makes a thing of it.",
-              accumulation: "WFH helped because you used the flexibility, not because the morning was easy."
-            },
-            {
-              id: "C",
-              main: "Try to calm it down quickly and still slip into the check-in on time without explaining why.",
-              effects: { his_wellbeing: -8, her_wellbeing: +4, child_wellbeing: +8, family_time: +4 },
-              signal: "You half-handle the shoes and half-watch the clock. The crying stops enough for the morning to move again. You join on time, but already tense.",
-              accumulation: "You kept work smooth, but carried the strain into both rooms."
-            }
-          ]
-        };
-      }
-      return SCENARIOS.mental_health[1];
-    }
-    if (partnerHome) {
+    if ((this.storyState?.choicePattern || [])[0] === 'A') {
       return {
-        ...SCENARIOS.mental_health[1],
-        sceneText: "{partnerName} can't find the paperwork for an appointment and is close to tears. She's already been trying to get the morning moving on her own. You have a 9am team check-in.",
-        context: "The check-in is a regular team call. People notice when someone joins late, especially your manager. The paperwork still has to be found before the morning moves on.",
+        id: "mh_2_makeup",
+        day: "Tuesday",
+        time: "3:00pm",
+        sceneText: "Your child is still upset about last night, and you said you would make it up by doing pickup and taking him to Lego. At 3:00pm, your promotion interview planned for tomorrow is suddenly moved to 3:30pm today.",
+        context: "If you miss this slot, you do not know when they will fit it back in.",
         choices: [
-          {
-            id: "A",
-            main: "\"I've got the check-in in a minute. Can you keep looking?\"",
-            effects: { his_wellbeing: -5, her_wellbeing: -15, child_wellbeing: -10, family_time: -5 },
-            signal: "You close the study door and join on time. From the other room you can hear drawers opening and shutting faster than they need to. At lunch, {partnerName} is brief with you without quite saying why.",
-            accumulation: "The meeting started on time. The rest of the morning had to move around it."
-          },
-          {
-            id: "B",
-            main: "Help her look and message the team that you'll be late.",
-            effects: { his_wellbeing: -6, her_wellbeing: +10, child_wellbeing: +10, family_time: +10 },
-            signal: "It takes nine minutes. The paperwork is in the side pocket of a bag you both forgot about. You join the call at 9:09. Someone else has already started the first item. Nobody makes a thing of it.",
-            accumulation: "WFH helped because you used the flexibility, not because the morning was easy."
-          },
-          {
-            id: "C",
-            main: "Try to sort it quickly and still slip into the check-in on time without explaining why.",
-            effects: { his_wellbeing: -8, her_wellbeing: +4, child_wellbeing: +8, family_time: +4 },
-            signal: "You half-look for the paperwork and half-watch the clock. The panic drops enough for the morning to move again. You join on time, but already tense.",
-            accumulation: "You kept work smooth, but carried the strain into both rooms."
-          }
+          { id: "A", main: "Stay for the interview and ask {partnerName} to do pickup.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You stay for the interview. Pickup changes hands again.", accumulation: "Work stress down: the interview happens when they want it to." },
+          { id: "B", main: "Leave for pickup and ask to reschedule.", effects: { work_stress: +10, partner_satisfaction: +10 }, signal: "You leave for pickup. The interview is no longer secure.", accumulation: "Work stress up: now you do not know how that looks." }
         ]
       };
     }
     return {
-      ...SCENARIOS.mental_health[1],
-      sceneText: "{partnerName} can't find the charger she needs and is close to tears. She has a 9am she can't move. You have a 9am team check-in.",
-      context: "The check-in is a regular team call. People notice when someone joins late, especially your manager. Her 9am is not moving either.",
+      id: "mh_2_hanging",
+      day: "Tuesday",
+      time: "3:00pm",
+      sceneText: "You sent the work after the deadline this morning. Your manager has not had time to read it and now wants you to present it at 3:30pm today. It is also your turn to do pickup, and {partnerName} is at work.",
+      context: "You cannot do both at the same time.",
       choices: [
-        {
-          id: "A",
-          main: "\"I've got the check-in in a minute. Can you keep looking?\"",
-          effects: { his_wellbeing: -5, her_wellbeing: -15, child_wellbeing: -10, family_time: -5 },
-          signal: "You close the study door and join on time. From the other room you can hear drawers opening and shutting faster than they need to. At lunch, {partnerName} is brief with you without quite saying why.",
-          accumulation: "The meeting started on time. The rest of the morning had to move around it."
-        },
-        {
-          id: "B",
-          main: "Help her look and message the team that you'll be late.",
-          effects: { his_wellbeing: -6, her_wellbeing: +10, child_wellbeing: +10, family_time: +10 },
-          signal: "It takes nine minutes. The charger is in yesterday's bag. You join the call at 9:09. Someone else has already started the first item. Nobody makes a thing of it. {partnerName} squeezes your arm on the way out.",
-          accumulation: "WFH helped because you used the flexibility, not because the morning was easy."
-        },
-        {
-          id: "C",
-          main: "Try to sort it quickly and still slip into the check-in on time without explaining why.",
-          effects: { his_wellbeing: -8, her_wellbeing: +4, child_wellbeing: +8, family_time: +4 },
-          signal: "You half-look for the charger and half-watch the clock. The panic drops enough for the morning to move again. You join on time, but already tense.",
-          accumulation: "You kept work smooth, but carried the strain into both rooms."
-        }
+        { id: "A", main: "Stay for the presentation and ask {partnerName} to cover pickup.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You stay for the presentation. Pickup shifts back onto {partnerName}.", accumulation: "Work stress down: at least you are there to explain it yourself." },
+        { id: "B", main: "Leave for pickup and ask to present later.", effects: { work_stress: +10, partner_satisfaction: +10 }, signal: "You leave for pickup. The presentation now depends on whether they will move it for you.", accumulation: "Work stress up: the delayed task is still hanging over you." }
       ]
     };
   }
 
   getMentalQ3() {
     const pattern = this.getMentalPattern();
-    if (!this.isNoChildrenProfile()) {
-      if (pattern === 'BOUNDARY') return SCENARIOS.mental_health[2];
+    if (pattern === 'HOME_DEBT') {
       return {
-        ...SCENARIOS.mental_health[2],
-        id: "mh_3_monitoring",
+        id: "mh_3_home_debt",
         day: "Thursday",
-        time: "4:45pm",
-        sceneText: "Thursday, 4:45pm. Your manager says the team will start using laptop activity tracking next week. Your child is already waiting because you said you would take them out before dinner. {partnerName} is by the door with the bag.",
-        context: "It does not start tonight. It still changes how this evening feels.",
+        time: "8:00pm",
+        sceneText: "Your partner wants to have a proper chat before bed. You still have not finished the follow-up note for tomorrow, and you know it may matter for your promotion application.",
+        context: "You can do the note now, or you can deal with home first.",
         choices: [
-          {
-            id: "A",
-            main: "Stay online a bit longer so you look active before you leave.",
-            effects: { his_wellbeing: -8, her_wellbeing: -6, child_wellbeing: -10, family_time: -10 },
-            signal: "By the time you finally get up, the mood has shifted. Your child stops hovering by the door. {partnerName} starts unpacking the bag.",
-            accumulation: "Monitoring changed nothing on paper. It still changed the room."
-          },
-          {
-            id: "B",
-            main: "Shut the laptop and go anyway.",
-            effects: { his_wellbeing: +6, her_wellbeing: +8, child_wellbeing: +10, family_time: +12 },
-            signal: "Once you are out the door, the pressure eases a little. No one from work messages. By the time you get back, you feel more like yourself than you did at 4:45.",
-            accumulation: "The pressure was real. You chose not to organise the whole evening around it."
-          },
-          {
-            id: "C",
-            main: "Go, but keep Teams on your phone and answer if anything comes in.",
-            effects: { his_wellbeing: -4, her_wellbeing: -2, child_wellbeing: -3, family_time: -4 },
-            signal: "You go, but every buzz makes your hand move first. Your child notices before saying anything. The outing happens, but work comes with you.",
-            accumulation: "This is how monitoring gets under the skin: work follows you even when you leave."
-          }
+          { id: "A", main: "Finish the note now.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You turn back to work. The note gets done, but the conversation does not happen tonight.", accumulation: "Work stress down: the note is no longer waiting for tomorrow morning." },
+          { id: "B", main: "Leave it until tomorrow and talk now.", effects: { work_stress: +10, partner_satisfaction: +10 }, signal: "You leave the note and stay in the room. The work is still there for tomorrow.", accumulation: "Work stress up: now the morning will start with something unfinished." }
         ]
       };
     }
-    if (pattern === 'BOUNDARY') {
+    if (pattern === 'WORK_DEBT') {
       return {
-        ...SCENARIOS.mental_health[2],
-        sceneText: "Thursday, 4:45pm. Your manager says that from next week the team will be expected in the office full-time to improve productivity and collaboration. One of your usual WFH days is the day you normally do the groceries, get dinner started, and are home before {partnerName} finishes.",
-        context: "The change starts next week. If nothing moves at work, the week at home will have to move instead.",
+        id: "mh_3_work_debt",
+        day: "Thursday",
+        time: "8:00am",
+        sceneText: "Today is one of your work-from-home days. After Tuesday, your manager asks if you can come in to talk through the delayed task and your promotion application. Your partner is out at work, and staying home means you can still cover the family side as planned.",
+        context: "If you go in, the home side needs covering another way.",
         choices: [
-          {
-            id: "A",
-            main: "Reply 'Okay' in the team chat, then tell {partnerName} the extra office day will just mean more for both of you to juggle.",
-            effects: { his_wellbeing: -8, her_wellbeing: -10, child_wellbeing: -10, family_time: -10 },
-            signal: "She nods, but you can see her already recalculating the week in her head: dinner later, chores later, both of you more rushed.",
-            accumulation: "The policy changed at work. The cost landed at home."
-          },
-          {
-            id: "B",
-            main: "Message your manager that full-time office working will not work for you because that home day is what makes the week workable.",
-            effects: { his_wellbeing: +6, her_wellbeing: +8, child_wellbeing: +10, family_time: +12 },
-            signal: "You stare at the message for a second before sending it. It is not comfortable, but once it is out of your hands, the week feels slightly less like something happening to you.",
-            accumulation: "Control over time only helps if you are willing to claim it."
-          },
-          {
-            id: "C",
-            main: "Say okay for now and spend the evening trying to work out what would have to move at home to make the week work.",
-            effects: { his_wellbeing: -4, her_wellbeing: -4, child_wellbeing: -3, family_time: -4 },
-            signal: "You leave the message there and start talking through options with {partnerName}. Nothing has broken yet, but the whole evening feels more provisional.",
-            accumulation: "You kept work easy in the moment, but brought the uncertainty home with you."
-          }
+          { id: "A", main: "Go into the office.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You go in. Work feels safer, but the plan at home has to move again.", accumulation: "Work stress down: at least you are in the room for that conversation." },
+          { id: "B", main: "Stay home and ask to do it online.", effects: { work_stress: +10, partner_satisfaction: +10 }, signal: "You stay home. The family side stays covered, but you do not know how the request lands.", accumulation: "Work stress up: now you are guessing what not going in will mean." }
         ]
       };
     }
     return {
-      ...SCENARIOS.mental_health[2],
-      id: "mh_3_monitoring_no_child",
+      id: "mh_3_neutral",
       day: "Thursday",
-      time: "4:45pm",
-      sceneText: "Thursday, 4:45pm. Your manager says the team will start using laptop activity tracking next week. {partnerName} is by the door because you said you would go for a walk before dinner.",
-      context: "It does not start tonight. It still changes how this evening feels.",
+      time: "7:00am",
+      sceneText: "Today is usually one of your work-from-home days. Your manager asks if you can come in this morning to go through your promotion application. If you go in, {partnerName} will have to adjust the family plan again.",
+      context: "Either work changes, or home does.",
       choices: [
-        {
-          id: "A",
-          main: "Stay online a bit longer so you look active before you leave.",
-          effects: { his_wellbeing: -8, her_wellbeing: -6, child_wellbeing: -10, family_time: -10 },
-          signal: "By the time you finally get up, the mood has shifted. {partnerName} takes her coat off and the walk quietly disappears.",
-          accumulation: "Monitoring changed nothing on paper. It still changed the room."
-        },
-        {
-          id: "B",
-          main: "Shut the laptop and go anyway.",
-          effects: { his_wellbeing: +6, her_wellbeing: +8, child_wellbeing: +10, family_time: +12 },
-          signal: "Once you are out the door, the pressure eases a little. No one from work messages. By the time you get back, you feel more like yourself than you did at 4:45.",
-          accumulation: "The pressure was real. You chose not to organise the whole evening around it."
-        },
-        {
-          id: "C",
-          main: "Go, but keep Teams on your phone and answer if anything comes in.",
-          effects: { his_wellbeing: -4, her_wellbeing: -2, child_wellbeing: -3, family_time: -4 },
-          signal: "You go, but every buzz makes your hand move first. {partnerName} notices before saying anything. The walk happens, but work comes with you.",
-          accumulation: "This is how monitoring gets under the skin: work follows you even when you leave."
-        }
+        { id: "A", main: "Go into the office.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You go in. The meeting happens in person, and the family plan shifts again.", accumulation: "Work stress down: at least you are there in person." },
+        { id: "B", main: "Stay home and ask to do it online.", effects: { work_stress: +10, partner_satisfaction: +10 }, signal: "You stay home. Home holds, but work feels less certain again.", accumulation: "Work stress up: you do not know whether online will feel like enough." }
+      ]
+    };
+  }
+
+  getMentalQ4() {
+    const choices = this.storyState?.choicePattern || [];
+    const workFirstCount = choices.filter(c => c === 'A').length;
+    const homeFirstCount = choices.filter(c => c === 'B').length;
+
+    if (workFirstCount >= 2) {
+      return {
+        id: "mh_4_work_first",
+        day: "Friday",
+        time: "8:40pm",
+        sceneText: "Your partner says they cannot keep rearranging family life around your work. You were meant to spend tonight together properly. Just then, a work message comes in.",
+        context: "You can stop and deal with home, or let work back in again.",
+        choices: [
+          { id: "A", main: "Check the message now.", effects: { work_stress: -10, partner_satisfaction: -12 }, signal: "You check it straight away. Work feels safer. Home does not.", accumulation: "Work stress down: at least you know what the message is." },
+          { id: "B", main: "Put the phone away and deal with this first.", effects: { work_stress: +10, partner_satisfaction: +12 }, signal: "You leave the message alone. The conversation at home finally happens.", accumulation: "Work stress up: the message is still there, unanswered." }
+        ]
+      };
+    }
+
+    return {
+      id: homeFirstCount >= 2 ? "mh_4_family_first" : "mh_4_neutral",
+      day: "Friday",
+      time: "11:45am",
+      sceneText: "Your manager says the team will be watched more closely next week. They add that visibility will matter in promotion decisions. A few minutes later, {partnerName} asks if you can drop them off for a GP appointment at 1:30 because they have not been able to sort another way.",
+      context: "You can stay available for work, or help and sort work later.",
+      choices: [
+        { id: "A", main: "Stay available for work and ask {partnerName} to make their own way.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You stay where you are. Work feels steadier, but the ask at home does not go away.", accumulation: "Work stress down: at least this afternoon stays clear." },
+        { id: "B", main: "Drop {partnerName} off and deal with work later.", effects: { work_stress: +10, partner_satisfaction: +10 }, signal: "You go with {partnerName}. Home feels steadier, but work is now something you need to catch up on.", accumulation: "Work stress up: next week already feels closer." }
       ]
     };
   }
 
   getMentalPattern() {
     const s = this.storyState || {};
-    const boundary = s.mentalBoundaryScore || 0;
-    const spill = s.mentalWorkSpillScore || 0;
-    const compromise = s.mentalCompromiseScore || 0;
-    if (boundary === 0 && spill === 0 && compromise === 0) return 'START';
-    if (boundary >= spill + 1 && boundary >= compromise + 1) return 'BOUNDARY';
-    if (spill >= boundary + 2 && spill >= compromise) return 'SPILLOVER';
-    if (compromise >= 2 && compromise >= boundary && compromise >= spill) return 'COMPROMISE';
-    return 'MIXED';
+    const homeDebt = s.mentalHomeDebt || 0;
+    const workDebt = s.mentalWorkDebt || 0;
+    if (homeDebt === 0 && workDebt === 0) return 'START';
+    if (homeDebt >= workDebt + 1) return 'HOME_DEBT';
+    if (workDebt >= homeDebt + 1) return 'WORK_DEBT';
+    return 'NEUTRAL';
   }
 
   getMentalWeekPattern() {
     const pattern = this.getMentalPattern();
-    if (pattern === 'BOUNDARY') return 'MOSTLY_GOOD';
-    if (pattern === 'SPILLOVER') return 'MOSTLY_BAD';
+    if (pattern === 'HOME_DEBT') return 'MOSTLY_BAD';
+    if (pattern === 'WORK_DEBT') return 'MIXED';
     return 'MIXED';
   }
 
@@ -3287,12 +3152,8 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
     }
 
     if (this.scenarioType === 'mental_health') {
-      if (choiceId === 'A') this.storyState.mentalWorkSpillScore += 2;
-      else if (choiceId === 'B') this.storyState.mentalBoundaryScore += 2;
-      else if (choiceId === 'C') {
-        this.storyState.mentalCompromiseScore += 2;
-        this.storyState.mentalWorkSpillScore += 1;
-      }
+      if (choiceId === 'A') this.storyState.mentalHomeDebt += 1;
+      else if (choiceId === 'B') this.storyState.mentalWorkDebt += 1;
     }
 
     // Track choice pattern and good choice count for all scenarios
@@ -3663,55 +3524,7 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
     return ending;
   }
 
-  getMentalQ4() {
-    const base = SCENARIOS.mental_health[3];
-    const his = this.meters?.his_wellbeing ?? 45;
-    if (this.isNoChildrenProfile()) {
-      if (his >= 45) {
-        return { ...base,
-          sceneText: "Friday, 8:20pm. You look wiped out after the week. The laptop is shut, but your hand is already drifting back toward it to clear a few last things. {partnerName} notices. 'I thought you were done for the day?'",
-          context: "The week has already taken a lot out of you. You could leave it there. You could also let work back in one more time."
-        };
-      }
-      return { ...base,
-        sceneText: "Friday, 8:20pm. {partnerName} has watched you drag yourself through the week. The laptop is shut, but your hand is already drifting back toward it to clear a few last things. She notices. 'I thought you were done for the day?'",
-        context: "The week has already taken a lot out of you. You could leave it there. You could also let work back in one more time."
-      };
-    }
-    if (his >= 45) {
-      return { ...base,
-        sceneText: "Friday, 8:20pm. You look wiped out after the week. The laptop is shut, but your hand is already drifting back toward it to clear a few last things. {partnerName} notices. 'I thought you were done for the day?'",
-        context: "The week has already taken a lot out of you. You could leave it there. You could also let work back in one more time."
-      };
-    }
-    return { ...base,
-      sceneText: "Friday, 8:20pm. {partnerName} has watched you drag yourself through the week. The laptop is shut, but your hand is already drifting back toward it to clear a few last things. She notices. 'I thought you were done for the day?'",
-      context: "The week has already taken a lot out of you. You could leave it there. You could also let work back in one more time."
-    };
-  }
-
   getMentalEndingOverride(ending) {
-    if (this.scenarioType !== 'mental_health' || !this.isNoChildrenProfile()) return ending;
-
-    if (ending.id === 'win') {
-      return {
-        ...ending,
-        desc: "Sunday evening. You're both in the same room and neither of you is trying to squeeze one more thing out of the night. Your wellbeing is at {his_wellbeing}%. {partnerName}'s is at {her_wellbeing}%. The atmosphere at home is at {child_wellbeing}%. Not perfect. But no one is at breaking point. That is what sustainable looks like."
-      };
-    }
-    if (ending.id === 'fail_child') {
-      return {
-        ...ending,
-        title: "The Stress Filled the House",
-        desc: "Household atmosphere dropped to {child_wellbeing}%. When two people are both running on empty, the stress settles into the flat itself. The mornings get sharper. The evenings get flatter. Small things start landing harder than they should."
-      };
-    }
-    if (ending.id === 'progress') {
-      return {
-        ...ending,
-        desc: "Your wellbeing: {his_wellbeing}%. {partnerName}'s: {her_wellbeing}%. Household atmosphere: {child_wellbeing}%. You're managing. Not thriving, but managing. The week had good moments and costly ones. No one collapsed, but the house still feels tense. The question is whether you can keep doing this."
-      };
-    }
     return ending;
   }
 
@@ -3905,22 +3718,6 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
       }
     }
     
-    // Apply interconnection mechanic for mental health
-    if (this.scenarioDef.mechanic === 'interconnection') {
-      // If his wellbeing drops, her wellbeing drops slightly
-      if (choice.effects.his_wellbeing && choice.effects.his_wellbeing < 0) {
-        this.meters.her_wellbeing = Math.max(0, this.meters.her_wellbeing - 5);
-      }
-      // If her wellbeing drops, child notices
-      if (choice.effects.her_wellbeing && choice.effects.her_wellbeing < 0) {
-        this.meters.child_wellbeing = Math.max(0, this.meters.child_wellbeing - 3);
-      }
-      // If family time is low, child wellbeing drops
-      if (this.meters.family_time < 30) {
-        this.meters.child_wellbeing = Math.max(0, this.meters.child_wellbeing - 5);
-      }
-    }
-    
     // Record meter state after this choice
     this.meterHistory.push({ scene: scene.id, choice: choiceId, ...this.meters, timestamp: new Date().toISOString() });
     this.logSceneEvent(scene.id, choiceId, responseTimeMs, metersBefore, { ...this.meters });
@@ -4091,7 +3888,7 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
       fp_2_closed_working:'Scene 2 — Tuesday evening load', fp_2_closed_homecare:'Scene 2 — Tuesday evening load', fp_2_closed_expecting:'Scene 2 — Tuesday evening load', fp_2_open:'Scene 2 — Tuesday evening load', fp_2_open_both:'Scene 2 — Tuesday evening load',
       fp_3_private_drift:'Scene 3 — Thursday private time', fp_3_private_recognition:'Scene 3 — Thursday private time',
       fp_4_out_loud_building:'Scene 4 — Friday lunch break', fp_4_out_loud_trying:'Scene 4 — Friday lunch break', fp_4_out_loud_expecting:'Scene 4 — Friday lunch break', fp_4_out_loud_parenting:'Scene 4 — Friday lunch break',
-      mh_1:'Scene 1 — Monday evening', mh_2:'Scene 2 — Wednesday morning', mh_3:'Scene 3 — Thursday office change', mh_3_monitoring:'Scene 3 — Thursday work pressure', mh_3_monitoring_no_child:'Scene 3 — Thursday work pressure', mh_4:'Scene 4 — Friday switch-off',
+      mh_1:'Scene 1 — Monday urgent task', mh_2:'Scene 2 — Tuesday clash', mh_2_makeup:'Scene 2 — Tuesday make-up plan', mh_2_hanging:'Scene 2 — Tuesday hanging over you', mh_3:'Scene 3 — Thursday branch', mh_3_home_debt:'Scene 3 — Thursday home debt', mh_3_work_debt:'Scene 3 — Thursday work debt', mh_3_neutral:'Scene 3 — Thursday neutral', mh_4:'Scene 4 — Friday finish', mh_4_work_first:'Scene 4 — Friday relationship strain', mh_4_family_first:'Scene 4 — Friday visibility warning', mh_4_neutral:'Scene 4 — Friday new policy',
       dl_1:'Scene 1 — Monday break', dl_2:'Scene 2 — Tuesday expectations', dl_3:'Scene 3 — Workspace question', dl_4:'Scene 4 — Friday noticing',
       emp_1:'Scene 1 — Initial request', emp_2:'Scene 2 — Responsiveness creep', emp_3:'Scene 3 — Project staffing', emp_4:'Scene 4 — Annual review',
       emp_2_pending:'Scene 2 — HR follow-up', emp_3_no_wfh:'Scene 3 — Team disengagement', emp_4_no_wfh:'Scene 4 — Exit conversation',
@@ -4168,8 +3965,8 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
               <option value="load">Stopping things landing mostly on her</option>
             ` : `
               <option value="work">Work performance</option>
-              <option value="energy">Your own energy</option>
-              <option value="family_time">Family time</option>
+              <option value="stress">Work stress</option>
+              <option value="promotion">Promotion chances</option>
               <option value="peace">Keeping the peace at home</option>
             `}
           </select>
@@ -4243,10 +4040,8 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
 
     if (this.scenarioType === 'mental_health') {
       const scores = [
-        { label: "your own energy", value: this.meters.his_wellbeing ?? 50 },
-        { label: "your partner's energy", value: this.meters.her_wellbeing ?? 50 },
-        { label: this.isNoChildrenProfile() ? "the atmosphere at home" : "how the household was feeling", value: this.meters.child_wellbeing ?? 50 },
-        { label: "whether there was any real time left for each other", value: this.meters.family_time ?? 50 }
+        { label: "work stress", value: 100 - (this.meters.work_stress ?? 50) },
+        { label: "whether home still felt steady", value: this.meters.partner_satisfaction ?? 50 }
       ].sort((a, b) => a.value - b.value);
       const driver = scores[0].label;
       return {
@@ -4289,6 +4084,8 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
       partner_stress: "your partner's stress",
       shared_effort: "how much effort came from both of you",
       work: "work performance",
+      stress: "work stress",
+      promotion: "promotion chances",
       energy: "your own energy",
       family_time: "family time",
       peace: "keeping the peace at home",
