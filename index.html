@@ -585,7 +585,7 @@ const METER_FEEDBACK_LABELS = {
   her_wellbeing: "Partner wellbeing",
   child_wellbeing: "Child wellbeing",
   family_time: "Time together",
-  work_stress: "Work stress",
+  work_stress: "Work anxiety",
   partner_satisfaction: "Family relationship",
   his_perception: "Your view",
   her_perception: "Her view",
@@ -606,7 +606,7 @@ const METER_FEEDBACK_PHRASES = {
   her_wellbeing: { up: "She got some room", down: "She took a hit" },
   child_wellbeing: { up: "Home felt easier", down: "Your child felt it" },
   family_time: { up: "More time together", down: "Time together slipped" },
-  work_stress: { up: "Work pressure eased", down: "Work pressure rose" },
+  work_stress: { up: "Work anxiety eased", down: "Work anxiety rose" },
   partner_satisfaction: { up: "Family relationship improved", down: "Family tension rose" },
   his_perception: { up: "You felt more on top of it", down: "You felt less on top of it" },
   her_perception: { up: "She saw more of it", down: "She saw less of it" },
@@ -652,14 +652,14 @@ const SCENARIO_DEFS = {
     id: "mental_health",
     title: "Mental Health",
     tagClass: "tag-2",
-    goal: "Try to get the promotion without letting work stress or your relationship tip too far.",
+    goal: "Try to get the promotion without letting work anxiety or your relationship tip too far.",
     description: "A week of small work-home trade-offs. The pressure is not just the work itself, but what it might mean for promotion if you get it wrong.",
     meters: [
-      { id: "work_stress", name: "Work stress", color: "meter-amber", initial: 48, inverted: true },
+      { id: "work_stress", name: "Work anxiety", color: "meter-amber", initial: 48, inverted: true },
       { id: "partner_satisfaction", name: "Family relationship", color: "meter-teal", initial: 58 }
     ],
     failConditions: [
-      { meter: "work_stress", threshold: 85, message: "Work stress hits 85% — the whole week starts feeling like a promotion test you cannot switch off from." },
+      { meter: "work_stress", threshold: 85, message: "Work anxiety hits 85% — the whole week starts feeling like a promotion test you cannot switch off from." },
       { meter: "partner_satisfaction", threshold: 20, below: true, message: "Family relationship drops below 20% — quarrels at home are now serious." }
     ],
     winCondition: { allOf: [
@@ -1325,27 +1325,27 @@ const ENDINGS = {
     { id: "win",
       condition: (m) => m.work_stress < 65 && m.partner_satisfaction >= 45,
       style: "ending-success", title: "You got promoted",
-      desc: "You got promoted. By the end of the week, work stress is at {work_stress} and family relationship is at {partner_satisfaction}. You managed to stay present enough at home without making your manager doubt your commitment to the promotion.",
+      desc: "You got promoted. Work anxiety did not take over, and things at home did not turn into serious quarrels. You managed to support your family, and the week did not give your manager reason to question your commitment.",
       insight: "The pressure here is often about perceived visibility rather than confirmed punishment. That is why small work-home moments can carry so much weight." },
     { id: "fail_both",
       condition: (m) => m.work_stress >= 65 && m.partner_satisfaction < 45,
       style: "ending-danger", title: "You did not get promoted",
-      desc: "You did not get promoted because both family conflict and work stress became too serious. By the end of the week, work stress is at {work_stress} and family relationship is at {partner_satisfaction}. Quarrels at home kept building, and your manager was left less sure about your commitment to the promotion.",
+      desc: "You did not get promoted because both family conflict and work anxiety became too serious. Quarrels at home kept building, and the anxiety around work never really switched off. By the end of the week, home needed too much repair and your manager was left less sure about your commitment.",
       insight: "When pressure at work and conflict at home build at the same time, each one makes the other harder to manage." },
     { id: "fail_relationship",
       condition: (m) => m.work_stress < 65 && m.partner_satisfaction < 45,
       style: "ending-warning", title: "You did not get promoted",
-      desc: "You did not get promoted because family conflicts kept pulling you away from work. By the end of the week, family relationship is down to {partner_satisfaction}. Too many promises were moved, cut short, or pushed behind work, and quarrels at home made it harder to stay focused on the promotion.",
+      desc: "You did not get promoted because family conflict kept pulling you away from work. Too many promises were moved, cut short, or pushed behind work. By the end of the week, quarrels at home were hard to avoid, and work no longer had your full attention.",
       insight: "Relationship strain often builds through repeated small disappointments rather than one decisive argument." },
     { id: "fail_stress",
       condition: (m) => m.work_stress >= 65 && m.partner_satisfaction >= 45,
       style: "ending-warning", title: "You did not get promoted",
-      desc: "You did not get promoted because work stress and anxiety became too high. By the end of the week, work stress is at {work_stress}. You managed to support your family and be present at important moments, but your manager was left less sure about your commitment to the promotion.",
+      desc: "You did not get promoted because work anxiety kept building through the week. You kept worrying about visibility, commitment, and whether your manager would read your choices badly. Even when you were supporting your family, work never really switched off, and it became harder to focus clearly on your work.",
       insight: "Promotion pressure can become especially hard to switch off when the standard is felt rather than clearly stated." },
     { id: "progress",
       condition: () => true,
       style: "ending-neutral", title: "You did not get promoted",
-      desc: "You did not get promoted this time. Work stress ends at {work_stress} and family relationship ends at {partner_satisfaction}. You avoided the worst outcome at home and at work, but your manager was still left unsure about your commitment to the promotion.",
+      desc: "You did not get promoted this time. The week did not collapse at home, and work anxiety did not fully take over, but neither side ever felt settled. By the end of the week, your manager was still left unsure about your commitment to the promotion.",
       insight: "These weeks often turn on repeated small decisions, not one dramatic mistake." }
   ],
   domestic_labour: [
@@ -2471,7 +2471,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
         career: "If work starts feeling shaky, having a child can feel riskier."
       },
       mental_health: {
-        work_stress: "How much work pressure you are carrying by the end of each choice.",
+        work_stress: "How much anxiety and worry you are carrying about work, visibility, and promotion by the end of each choice.",
         partner_satisfaction: "How far family relationship still feels okay by the end of each choice."
       },
       domestic_labour: {
@@ -2874,7 +2874,7 @@ Core principles:
 - Previous choices should shape later branches.
 - Workplace pressure should be framed as perceived risk, anxiety, visibility, and possible bias, not confirmed punishment.
 - Endings must be direct, not vague.
-- Use plain English and direct words like promotion, stress, and quarrels at home.
+- Use plain English and direct words like promotion, anxiety, and quarrels at home.
 
 Scenario brief:
 - Character: Daniel
@@ -2885,7 +2885,7 @@ Scenario brief:
 - His goal is promotion.
 
 Visible bars:
-- Work stress = pressure, anxiety, and worry about work, promotion, visibility, and how he is being judged.
+- Work anxiety = pressure, anxiety, and worry about work, promotion, visibility, and how he is being judged.
 - Family relationship = how steady things feel at home, including conflict, disappointment, and whether quarrels at home are building.
 
 Structure:
