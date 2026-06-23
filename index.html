@@ -1499,15 +1499,15 @@ class Game {
       education: 'degree',
       children: 'yes_young',
       familyPlan: '',
-      industry: '8',
-      occupation: '2',
+      industry: '10',
+      occupation: '1',
       wfh: 'hybrid',
       partnerWfh: 'full-time,full_office',
       att_father: '5',
       att_stigma: '3',
       att_hours: '4',
     };
-    this.surveyJobLabel = 'professional in education';
+    this.surveyJobLabel = 'project manager';
     this.wfhArrangement = '2-3 days WFH';
   }
 
@@ -2428,7 +2428,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
               <p style="font-size:14px;color:#555;line-height:1.6;margin-bottom:16px;">
                 ${this.playerName} works full-time, and can work from home 2-3 days a week.
                 He and his partner have one young child under age 5. His partner works mostly from the office.
-                He is trying to get promoted as a senior engineer in the company.
+                He is trying to get promoted as a project manager in the company.
               </p>
 
               <div style="margin-bottom:18px;">
@@ -2436,7 +2436,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
                 <span class="char-trait-tag active">2-3 days WFH</span>
                 <span class="char-trait-tag active">One young child</span>
                 <span class="char-trait-tag active">Partner office-based</span>
-                <span class="char-trait-tag active">Senior engineer</span>
+                <span class="char-trait-tag active">Project manager</span>
               </div>
 
               <div style="background:#f8f8f8;border-radius:10px;padding:14px 16px;margin-bottom:18px;">
@@ -2879,6 +2879,7 @@ Core principles:
 Scenario brief:
 - Character: Daniel
 - Daniel works full-time and can work from home 2-3 days a week.
+- Daniel works as a project manager.
 - He has one young child under 5.
 - His partner works mostly from the office.
 - His goal is promotion.
@@ -3074,6 +3075,24 @@ DO NOT CHANGE:
 Return ONLY valid JSON: {"scene":"...","context":"..."}`;
   }
 
+  buildMentalHealthRewritePrompt(scene) {
+    return `Rewrite this scene in shorter, plain English for a short decision game.
+
+Rules:
+- Keep every factual detail the same.
+- Do not add any new facts.
+- Do not add any new time, deadline, commute detail, or backstory.
+- Do not add any new work-specific detail like a school, clinic, client, or team unless it is already in the original.
+- Do not change the branch logic or tension.
+- Keep it natural and minimal.
+- One or two short sentences only.
+
+Original scene:
+"${scene.sceneText}"
+
+Return ONLY valid JSON: {"scene":"..."}`;
+  }
+
   async personalizeScene(scene) {
     const d = this.surveyData || {};
     const patternKey = this.storyState?.choicePattern?.join('') || '';
@@ -3087,6 +3106,31 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
     }
 
     try {
+      if (this.scenarioType === 'mental_health') {
+        const data = await callAIEndpoint('/api/personalize-scene', {
+          prompt: this.buildMentalHealthRewritePrompt(scene),
+          max_tokens: 220
+        });
+        const rawText = data.text || '';
+        console.log('AI raw:', rawText);
+        const parsed = parseClaudeJSON(rawText);
+        const rewritten = (parsed.scene || parsed.sceneText || '').trim();
+        const invalidMentalRewrite =
+          !rewritten ||
+          rewritten.length > scene.sceneText.length + 50 ||
+          (/\b\d{1,2}:\d{2}\s*(?:am|pm)\b/i.test(rewritten) && !/\b\d{1,2}:\d{2}\s*(?:am|pm)\b/i.test(scene.sceneText)) ||
+          (/commute|head of department|parent complaint/i.test(rewritten) && !/commute|head of department|parent complaint/i.test(scene.sceneText));
+
+        const personalized = this.preAdaptScene({
+          ...scene,
+          sceneText: invalidMentalRewrite ? scene.sceneText : rewritten,
+          context: scene.context,
+          _aiAdapted: !invalidMentalRewrite
+        });
+        this.sceneCache[cacheKey] = personalized;
+        return personalized;
+      }
+
       const data = await callAIEndpoint('/api/personalize-scene', {
         prompt: this.buildAIPrompt(scene, contextStr),
         max_tokens: 400
@@ -3780,7 +3824,7 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
     let signalHtml = `
       <div class="signal-box">
         <p class="signal-text">${this.replaceVars(choice.signal)}</p>
-        ${choice.accumulation ? `<p class="accumulation">${this.replaceVars(choice.accumulation)}</p>` : ''}
+        ${choice.accumulation && this.scenarioType !== 'mental_health' ? `<p class="accumulation">${this.replaceVars(choice.accumulation)}</p>` : ''}
       </div>
     `;
 
@@ -3791,10 +3835,14 @@ Return ONLY valid JSON: {"scene":"...","context":"..."}`;
 
     if (topChanges.length) {
       const changeChips = topChanges.map(change => {
-        const phrases = METER_FEEDBACK_PHRASES[change.id];
-        const label = phrases
-          ? (change.positive ? phrases.up : phrases.down)
-          : `${METER_FEEDBACK_LABELS[change.id] || change.name} ${change.diff > 0 ? 'up' : 'down'}`;
+        const label = this.scenarioType === 'mental_health'
+          ? `${change.name} ${change.diff > 0 ? 'up' : 'down'}`
+          : (() => {
+              const phrases = METER_FEEDBACK_PHRASES[change.id];
+              return phrases
+                ? (change.positive ? phrases.up : phrases.down)
+                : `${METER_FEEDBACK_LABELS[change.id] || change.name} ${change.diff > 0 ? 'up' : 'down'}`;
+            })();
         return `<span class="meter-change ${change.positive ? 'change-up' : 'change-down'}">${label}</span>`;
       }).join('');
 
