@@ -651,7 +651,7 @@ const SCENARIO_DEFS = {
   
   mental_health: {
     id: "mental_health",
-    title: "Mental Health",
+    title: "Stay on track for promotion without pushing up work anxiety or hurting family life.",
     tagClass: "tag-2",
     goal: "Try to get the promotion without letting work anxiety or your relationship tip too far.",
     description: "A week of small work-home trade-offs. The pressure is not just the work itself, but what it might mean for promotion if you get it wrong.",
@@ -771,7 +771,7 @@ const SCENARIOS = {
           id: "B",
           main: "Join the dinner and apologise for sending the document late.",
           effects: { work_stress: +10, partner_satisfaction: +10 },
-          signal: "You joined the dinner, but the late document stayed at the back of your mind all evening.",
+          signal: "You joined the dinner, but the task stayed at the back of your mind all evening.",
           accumulation: "Work anxiety rose: you kept wondering how the delay would be read."
         }
       ]
@@ -2312,7 +2312,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
       <div class="screen active">
         <div class="card">
           <h1>${GAME_CONFIG.title}</h1>
-          <p class="subtitle">Mental Health is the only scenario available for this event. Four scenes.</p>
+          <p class="subtitle">This is the only scenario available for this event. Four scenes.</p>
           <div class="scenario-grid">${cards}</div>
         </div>
       </div>
@@ -2338,7 +2338,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
     this.root.innerHTML = `
       <div class="screen active">
         <div class="scenario-info">
-          <span class="scenario-tag ${this.scenarioDef.tagClass}">Mental Health</span>
+          <span class="scenario-tag ${this.scenarioDef.tagClass}">Work pressure</span>
           <h3 style="margin-top:8px;">Meet Daniel before the week begins.</h3>
         </div>
 
@@ -2666,11 +2666,11 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
       id: "mh_2_hanging",
       day: "Tuesday",
       time: "3:00pm",
-        sceneText: "You sent the document late yesterday. Your manager has not had time to read it properly and now wants you to present it at 3:30pm today. It is also your turn to do pickup, and {partnerName} is at work.",
+        sceneText: "You sent the document late yesterday. Your client has not had time to read it properly and now wants you to present it at 3:30pm today. Your manager will also be there. Yet it is also your turn to do pickup, and {partnerName} is at work.",
         context: "You cannot do both at the same time.",
         choices: [
-        { id: "A", main: "Stay for the presentation and ask {partnerName} to cover pickup.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You stayed for the presentation. Pickup shifted back onto {partnerName}.", accumulation: "Work anxiety eased: at least you were there to explain it yourself." },
-        { id: "B", main: "Leave for pickup and ask to present later.", effects: { work_stress: +10, partner_satisfaction: +10 }, signal: "You left for pickup. The presentation then rested on whether they would move it for you.", accumulation: "Work anxiety rose: the delayed task was still hanging over you." }
+        { id: "A", main: "Stay for the presentation and ask {partnerName} to cover pickup.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You stayed for the presentation and called {partnerName} at the last minute to do pickup.", accumulation: "Work anxiety eased: at least you were there to explain it yourself." },
+        { id: "B", main: "Ask to postpone the presentation until later as you have to do pickup today.", effects: { work_stress: +10, partner_satisfaction: +10 }, signal: "The presentation could not be postponed, so your manager covered for you. You left for pickup, but kept thinking about whether you had made the right choice.", accumulation: "Work anxiety rose: the delayed task was still hanging over you." }
       ]
     };
   }
@@ -2695,10 +2695,10 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
         id: "mh_3_work_debt",
         day: "Thursday",
         time: "8:00am",
-        sceneText: "Today is one of your work-from-home days. After Tuesday, your manager asks if you can come in to talk through the delayed task and your promotion application. Your partner is out at work, and staying home means you can still cover the family side as planned.",
+        sceneText: "Your manager asks if you can come in to talk through your recent performance and your promotion application. Yet your child is now at home during school hours, and today is one of your work-from-home days.",
         context: "If you go in, the home side needs covering another way.",
         choices: [
-          { id: "A", main: "Go into the office.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You went in. Being there in person felt less exposed, but the plan at home had to move again.", accumulation: "Work anxiety eased: being there in person felt harder to question." },
+          { id: "A", main: "Go into the office.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You went in and received positive feedback from your manager. But you kept worrying about whether your child was doing okay at home.", accumulation: "Work anxiety eased: being there in person felt harder to question." },
           { id: "B", main: "Stay home and ask to do it online.", effects: { work_stress: +10, partner_satisfaction: +10 }, signal: "You stayed home. The family side stayed covered, but you did not know how the request landed.", accumulation: "Work anxiety rose: you were left guessing what not going in would mean." }
         ]
       };
@@ -2707,11 +2707,11 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
       id: "mh_3_neutral",
       day: "Thursday",
       time: "7:00am",
-      sceneText: "Today is usually one of your work-from-home days. Your manager asks if you can come in this morning to go through your promotion application. If you go in, {partnerName} will have to adjust the family plan again.",
+      sceneText: "Today is usually one of your work-from-home days. Your manager asks if you can come in this morning to go through your application for the senior project manager role. However, this also means that {partnerName} will have to adjust their schedule again to cover you.",
       context: "Either work changes, or home does.",
       choices: [
         { id: "A", main: "Go into the office.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You went in. Being there in person felt easier to defend, and the family plan shifted again.", accumulation: "Work anxiety eased: being there in person felt easier to justify." },
-        { id: "B", main: "Stay home and ask to do it online.", effects: { work_stress: +10, partner_satisfaction: +10 }, signal: "You stayed home. Home held, but work felt less certain again.", accumulation: "Work anxiety rose: you did not know whether online would feel like enough." }
+        { id: "B", main: "Stay home and ask to do it online.", effects: { work_stress: +10, partner_satisfaction: +10 }, signal: "You stayed home as planned, but you felt guilty during the meeting with your manager and ended up staying on longer than usual.", accumulation: "Work anxiety rose: you did not know whether online would feel like enough." }
       ]
     };
   }
@@ -2739,11 +2739,11 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
       id: homeFirstCount >= 2 ? "mh_4_family_first" : "mh_4_neutral",
       day: "Friday",
       time: "11:45am",
-      sceneText: "Your manager says the team will be watched more closely next week. They add that visibility will matter in promotion decisions. A few minutes later, {partnerName} asks if you can drop them off for a GP appointment at 1:30 because they have not been able to sort another way.",
-      context: "You can stay available for work, or help and sort work later.",
+      sceneText: "Your manager says that, to improve the management of working hours, everyone now has to check in online before and after work, and this will also be used as an indicator of performance. You also need to drop {partnerName} off for a GP appointment at 8:00am tomorrow morning, which means you will be back at 9:20 at the latest — slightly later than your normal start time.",
+      context: "You can try to rearrange the appointment plans now, or keep tomorrow morning as it is and accept the late check-in.",
       choices: [
-        { id: "A", main: "Stay available for work and ask {partnerName} to make their own way.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You stayed where you were. Work felt more manageable, but the ask at home did not go away.", accumulation: "Work anxiety eased: at least the afternoon stayed clear." },
-        { id: "B", main: "Drop {partnerName} off and deal with work later.", effects: { work_stress: +10, partner_satisfaction: +10 }, signal: "You went with {partnerName}. Home felt steadier, but work was then something you needed to catch up on.", accumulation: "Work anxiety rose: next week already felt closer." }
+        { id: "A", main: "Discuss with {partnerName} whether you can sort out another way for tomorrow.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You raised it straight away. Work felt more manageable, but the problem at home did not go away.", accumulation: "Work anxiety eased: at least the morning no longer felt fixed." },
+        { id: "B", main: "Drop {partnerName} off as planned.", effects: { work_stress: +10, partner_satisfaction: +10 }, signal: "You went with {partnerName}, but you were unsure how big a problem it would be to check in 20 minutes late.", accumulation: "Work anxiety rose: next week already felt closer." }
       ]
     };
   }
@@ -2878,14 +2878,14 @@ What you should not do:
 
 Current working tree for reference:
 - Goal: Try to get the promotion without pushing up work anxiety or hurting family life.
-- Scene 1: Monday 6:15pm — Urgent task. Child's birthday dinner vs urgent task due before 8am tomorrow. Choice A = do it now; work anxiety down, family relationship down. Choice B = leave it until tomorrow morning; work anxiety up, family relationship up.
+- Scene 1: Monday 5:00pm — Urgent task. Child's birthday dinner vs urgent task due before 6pm today. Choice A = finish the work first and apologise for joining dinner later. Choice B = join the dinner and apologise for sending the document late.
 - If Scene 1 = A: Scene 2 is Tuesday 3:00pm — Make-up plan under threat. Child still upset; promotion interview moved to 3:30pm today. Choice A = stay for interview and ask partner to do pickup. Choice B = leave for pickup and ask to reschedule.
-- If Scene 1 = B: Scene 2 is Tuesday 3:00pm — Still hanging over you. Late task now needs a 3:30pm presentation; it is also your turn to do pickup. Choice A = stay for the presentation and ask partner to cover pickup. Choice B = leave for pickup and ask to present later.
+- If Scene 1 = B: Scene 2 is Tuesday 3:00pm — Still hanging over you. Late document now needs a 3:30pm presentation with the client, and your manager will also be there; it is also your turn to do pickup. Choice A = stay for the presentation and ask partner to cover pickup. Choice B = ask to postpone the presentation until later because you have to do pickup today.
 - If home has taken more of the hit: Scene 3 is Thursday 8:00pm — Proper conversation or one more work task. Partner wants a proper chat before bed; follow-up note for promotion is unfinished. Choice A = finish the note now. Choice B = leave it until tomorrow and talk now.
-- If work has taken more of the hit: Scene 3 is Thursday 8:00am — Go in today or stay home. Manager asks him to come in to discuss the delayed task and promotion application. Choice A = go into the office. Choice B = stay home and ask to do it online.
-- If neutral: Scene 3 is Thursday 7:00am — Go into the office or stay home. Manager asks him to come in to go through the promotion application. Choice A = go into the office. Choice B = stay home and ask to do it online.
+- If work has taken more of the hit: Scene 3 is Thursday 8:00am — Go in today or stay home. Manager asks him to come in to talk through his recent performance and promotion application; his child is at home on a work-from-home day. Choice A = go into the office. Choice B = stay home and ask to do it online.
+- If neutral: Scene 3 is Thursday 7:00am — Go into the office or stay home. Manager asks him to come in to go through his application for the senior project manager role. Choice A = go into the office. Choice B = stay home and ask to do it online.
 - If mostly work-first: Scene 4 is Friday 8:40pm — This cannot keep happening. Partner says they cannot keep rearranging family life around work; then a work message comes in. Choice A = check the message now. Choice B = put the phone away and deal with this first.
-- If work has not clearly dominated the week: Scene 4 is Friday 11:45am — Visibility warning. Manager says visibility will matter in promotion decisions next week; partner then asks for a lift to a GP appointment at 1:30. Choice A = stay available for work and ask partner to make their own way. Choice B = drop partner off and deal with work later.
+- If work has not clearly dominated the week: Scene 4 is Friday 11:45am — New online check-in rule. Manager says everyone must check in online before and after work and this will count as a performance indicator; partner needs dropping off for a GP appointment at 8:00am tomorrow morning. Choice A = discuss with partner whether another way can be sorted for tomorrow. Choice B = drop partner off as planned.
 
 Use this tree as the reference structure. You may improve the wording of this scene, but do not change the underlying branch logic or add extra backstory.
 ` : '';
