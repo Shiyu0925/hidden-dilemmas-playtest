@@ -2291,19 +2291,11 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
 
   showScenarioSelect() {
     const scenarios = [SCENARIO_DEFS.mental_health];
-    const scenarioCopy = {
-      family_planning: { kicker: "Shared future" },
-      mental_health: { kicker: "Work pressure" },
-      domestic_labour: { kicker: "Home load" },
-      employer: { kicker: "Manager view" }
-    };
 
     const cards = scenarios.map((s) => {
       const cardDef = this.getAdjustedScenarioDef(s.id);
-      const copy = scenarioCopy[s.id] || { kicker: "Scenario" };
       return `
         <div class="scenario-card" onclick="game.selectScenario('${s.id}')">
-          <span class="scenario-tag ${cardDef.tagClass}">${copy.kicker}</span>
           <p class="scenario-title">${cardDef.title}</p>
         </div>`;
     }).join('');
@@ -2312,7 +2304,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
       <div class="screen active">
         <div class="card">
           <h1>${GAME_CONFIG.title}</h1>
-          <p class="subtitle">This is the only scenario available for this event. Four scenes.</p>
+          <p class="subtitle">Stay on track for promotion without pushing up work anxiety or hurting family life.</p>
           <div class="scenario-grid">${cards}</div>
         </div>
       </div>
@@ -2338,8 +2330,8 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
     this.root.innerHTML = `
       <div class="screen active">
         <div class="scenario-info">
-          <span class="scenario-tag ${this.scenarioDef.tagClass}">Work pressure</span>
-          <h3 style="margin-top:8px;">Meet Daniel before the week begins.</h3>
+          <h3>${this.scenarioDef.title}</h3>
+          <p style="margin-top:8px;font-size:14px;line-height:1.5;opacity:0.92;">Meet Daniel before the week begins.</p>
         </div>
 
         <div class="card">
@@ -2654,7 +2646,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
         id: "mh_2_makeup",
         day: "Tuesday",
         time: "3:00pm",
-        sceneText: "Your child is still upset about last night, and you said you would make it up by doing pickup and taking him to Lego. At 3:00pm, your promotion interview planned for tomorrow is suddenly moved to 3:30pm today.",
+        sceneText: "Your child is still upset about last night, and you said you would make it up by doing pickup and taking him to Lego. At 3:00pm, your promotion mock interview planned for tomorrow is suddenly moved to 3:30pm today.",
         context: "If you miss this slot, you do not know when they will fit it back in.",
         choices: [
           { id: "A", main: "Stay for the interview and ask {partnerName} to do pickup.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You stayed for the interview. Pickup changed hands again.", accumulation: "Work anxiety eased: the interview happened when they wanted it to." },
@@ -2742,7 +2734,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
       sceneText: "Your manager says that, to improve the management of working hours, everyone now has to check in online before and after work, and this will also be used as an indicator of performance. You also need to drop {partnerName} off for a GP appointment at 8:00am tomorrow morning, which means you will be back at 9:20 at the latest — slightly later than your normal start time.",
       context: "You can try to rearrange the appointment plans now, or keep tomorrow morning as it is and accept the late check-in.",
       choices: [
-        { id: "A", main: "Discuss with {partnerName} whether you can sort out another way for tomorrow.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You raised it straight away. Work felt more manageable, but the problem at home did not go away.", accumulation: "Work anxiety eased: at least the morning no longer felt fixed." },
+        { id: "A", main: "Discuss with {partnerName} whether you can sort out another way for tomorrow.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You raised it with {partnerName} straight away. You managed to check in on time and stay responsive, but {partnerName} had a hard time getting a cab during peak hour.", accumulation: "Work anxiety eased: at least the morning no longer felt fixed." },
         { id: "B", main: "Drop {partnerName} off as planned.", effects: { work_stress: +10, partner_satisfaction: +10 }, signal: "You went with {partnerName}, but you were unsure how big a problem it would be to check in 20 minutes late.", accumulation: "Work anxiety rose: next week already felt closer." }
       ]
     };
