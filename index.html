@@ -2290,7 +2290,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
   }
 
   showScenarioSelect() {
-    const scenarios = Object.values(SCENARIO_DEFS);
+    const scenarios = [SCENARIO_DEFS.mental_health];
     const scenarioCopy = {
       family_planning: { kicker: "Shared future" },
       mental_health: { kicker: "Work pressure" },
@@ -2312,7 +2312,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
       <div class="screen active">
         <div class="card">
           <h1>${GAME_CONFIG.title}</h1>
-          <p class="subtitle">Choose one scenario. Four scenes each.</p>
+          <p class="subtitle">Mental Health is the only scenario available for this event. Four scenes.</p>
           <div class="scenario-grid">${cards}</div>
         </div>
       </div>
