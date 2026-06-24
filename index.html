@@ -757,22 +757,22 @@ const SCENARIOS = {
     {
       id: "mh_1",
       day: "Monday",
-      time: "6:15pm",
-      sceneText: "It is your child's birthday dinner. You promised {partnerName} you would be there on time. Just before you log off, an urgent piece of work comes in that needs to reach the client before 8am tomorrow.",
+      time: "5:00pm",
+      sceneText: "It is your child's birthday dinner. You promised that you would finish work and join them on time. Just before you log off, an urgent piece of work comes in that needs to reach the client before 6pm today.",
       choices: [
         {
           id: "A",
-          main: "Do it now.",
+          main: "Finish the work first and apologise for joining dinner later.",
           effects: { work_stress: -10, partner_satisfaction: -10 },
-          signal: "You got the work moving, but dinner went ahead without you. By the time you finally joined them, the candles were gone.",
-          accumulation: "Work anxiety eased: tonight's task felt contained."
+          signal: "You finished the work first, but dinner went ahead without you. By the time you finally joined them, the candles were gone.",
+          accumulation: "Work anxiety eased: the document was out before 6pm."
         },
         {
           id: "B",
-          main: "Leave it until tomorrow morning.",
+          main: "Join the dinner and apologise for sending the document late.",
           effects: { work_stress: +10, partner_satisfaction: +10 },
-          signal: "You made the dinner, but the task stayed at the back of your mind all evening.",
-          accumulation: "Work anxiety rose: you kept wondering whether leaving it would be noticed."
+          signal: "You joined the dinner, but the late document stayed at the back of your mind all evening.",
+          accumulation: "Work anxiety rose: you kept wondering how the delay would be read."
         }
       ]
     },
@@ -2666,7 +2666,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
       id: "mh_2_hanging",
       day: "Tuesday",
       time: "3:00pm",
-        sceneText: "You sent the work after the deadline this morning. Your manager has not had time to read it and now wants you to present it at 3:30pm today. It is also your turn to do pickup, and {partnerName} is at work.",
+        sceneText: "You sent the document late yesterday. Your manager has not had time to read it properly and now wants you to present it at 3:30pm today. It is also your turn to do pickup, and {partnerName} is at work.",
         context: "You cannot do both at the same time.",
         choices: [
         { id: "A", main: "Stay for the presentation and ask {partnerName} to cover pickup.", effects: { work_stress: -10, partner_satisfaction: -10 }, signal: "You stayed for the presentation. Pickup shifted back onto {partnerName}.", accumulation: "Work anxiety eased: at least you were there to explain it yourself." },
@@ -2763,6 +2763,44 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
     if (pattern === 'HOME_DEBT') return 'MOSTLY_BAD';
     if (pattern === 'WORK_DEBT') return 'MIXED';
     return 'MIXED';
+  }
+
+  getAppliedChoiceEffects(choice) {
+    const appliedEffects = { ...(choice.effects || {}) };
+
+    if (this.scenarioType !== 'mental_health' || !['A', 'B'].includes(choice.id)) {
+      return appliedEffects;
+    }
+
+    const priorPattern = this.storyState?.choicePattern || [];
+    const previousChoice = priorPattern[priorPattern.length - 1] || null;
+    if (!previousChoice || !['A', 'B'].includes(previousChoice)) {
+      return appliedEffects;
+    }
+
+    const add = (meter, delta) => {
+      appliedEffects[meter] = (appliedEffects[meter] || 0) + delta;
+    };
+
+    // Mental-health meters now react to sequence, not only totals:
+    // repeated work-first choices deepen the relationship hit;
+    // repeated home-first choices compound work anxiety;
+    // switching direction changes the texture of the next hit.
+    if (previousChoice === 'A' && choice.id === 'A') {
+      add('work_stress', 2);
+      add('partner_satisfaction', -4);
+    } else if (previousChoice === 'B' && choice.id === 'B') {
+      add('work_stress', 4);
+      add('partner_satisfaction', -2);
+    } else if (previousChoice === 'A' && choice.id === 'B') {
+      add('work_stress', 2);
+      add('partner_satisfaction', 4);
+    } else if (previousChoice === 'B' && choice.id === 'A') {
+      add('work_stress', -2);
+      add('partner_satisfaction', -4);
+    }
+
+    return appliedEffects;
   }
 
   // ── AI Prompt Builder (separated for clarity) ───────────────────────────
@@ -3711,6 +3749,7 @@ Return ONLY valid JSON: {"scene":"..."}`;
   makeChoice(choiceId) {
     const scene = this.getActiveScene(this.currentIndex);
     const choice = scene.choices.find(c => c.id === choiceId);
+    const appliedEffects = this.getAppliedChoiceEffects(choice);
 
     // Update branching story state BEFORE recording (so it's captured in data)
     this.updateStoryState(scene.id, choiceId, choice);
@@ -3721,6 +3760,7 @@ Return ONLY valid JSON: {"scene":"..."}`;
       scene: scene.id,
       choice: choiceId,
       label: this.replaceVars(choice.main),
+      appliedEffects,
       responseTimeMs,
       timestamp: new Date().toISOString(),
       storyState: { ...this.storyState }
@@ -3730,9 +3770,9 @@ Return ONLY valid JSON: {"scene":"..."}`;
 
     // Apply effects (cap at ±12 per BAL-001)
     const changes = [];
-    for (let key in choice.effects) {
+    for (let key in appliedEffects) {
       const oldVal = this.meters[key];
-      const capped = Math.max(-12, Math.min(12, choice.effects[key]));
+      const capped = Math.max(-12, Math.min(12, appliedEffects[key]));
       this.meters[key] = Math.max(0, Math.min(100, this.meters[key] + capped));
       const diff = this.meters[key] - oldVal;
       if (diff !== 0) {
@@ -3747,7 +3787,7 @@ Return ONLY valid JSON: {"scene":"..."}`;
     }
     
     // Record meter state after this choice
-    this.meterHistory.push({ scene: scene.id, choice: choiceId, ...this.meters, timestamp: new Date().toISOString() });
+    this.meterHistory.push({ scene: scene.id, choice: choiceId, appliedEffects, ...this.meters, timestamp: new Date().toISOString() });
     this.logSceneEvent(scene.id, choiceId, responseTimeMs, metersBefore, { ...this.meters });
 
     // Check fail conditions
