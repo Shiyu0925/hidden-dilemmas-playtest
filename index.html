@@ -587,7 +587,7 @@ const METER_FEEDBACK_LABELS = {
   child_wellbeing: "Child wellbeing",
   family_time: "Time together",
   work_stress: "Work anxiety",
-  partner_satisfaction: "Family relationship",
+  family_conflict: "Family conflict",
   his_perception: "Your view",
   her_perception: "Her view",
   actual_split: "Your share",
@@ -608,7 +608,7 @@ const METER_FEEDBACK_PHRASES = {
   child_wellbeing: { up: "Home felt easier", down: "Your child felt it" },
   family_time: { up: "More time together", down: "Time together slipped" },
   work_stress: { up: "Work anxiety eased", down: "Work anxiety rose" },
-  partner_satisfaction: { up: "Family relationship improved", down: "Family tension rose" },
+  family_conflict: { up: "Family conflict eased", down: "Family conflict rose" },
   his_perception: { up: "You felt more on top of it", down: "You felt less on top of it" },
   her_perception: { up: "She saw more of it", down: "She saw less of it" },
   actual_split: { up: "You took on more", down: "You took on less" },
@@ -657,15 +657,15 @@ const SCENARIO_DEFS = {
     description: "A week of small trade-offs between work and home. The pressure comes not just from the work itself, but from what getting it wrong might mean for your promotion and your family life.",
     meters: [
       { id: "work_stress", name: "Work anxiety", color: "meter-amber", initial: 48, inverted: true },
-      { id: "partner_satisfaction", name: "Family relationship", color: "meter-teal", initial: 58 }
+      { id: "family_conflict", name: "Family conflict", color: "meter-teal", initial: 42, inverted: true }
     ],
     failConditions: [
       { meter: "work_stress", threshold: 85, message: "Work anxiety hits 85% — the whole week starts feeling like a promotion test you cannot switch off from." },
-      { meter: "partner_satisfaction", threshold: 20, below: true, message: "Family relationship drops below 20% — arguments at home now feel hard to avoid." }
+      { meter: "family_conflict", threshold: 80, message: "Family conflict hits 80% — arguments at home now feel hard to avoid." }
     ],
     winCondition: { allOf: [
       { meter: "work_stress", threshold: 65, below: false, inverted: true },
-      { meter: "partner_satisfaction", threshold: 45 }
+      { meter: "family_conflict", threshold: 54, below: false, inverted: true }
     ], message: "You stayed on track for promotion without letting the week tip too far at home." }
   },
   
@@ -763,14 +763,14 @@ const SCENARIOS = {
         {
           id: "A",
           main: "Finish the work first and apologise for joining dinner later.",
-          effects: { work_stress: -8, partner_satisfaction: -10 },
+          effects: { work_stress: -10, family_conflict: +12 },
           signal: "You finished the work first, but dinner went ahead without you. By the time you finally joined them, the candles were gone.",
           accumulation: "At least the document was out before 6pm."
         },
         {
           id: "B",
           main: "Join the dinner and apologise for sending the document late.",
-          effects: { work_stress: +10, partner_satisfaction: +6 },
+          effects: { work_stress: +10, family_conflict: -6 },
           signal: "You joined the dinner, but the task stayed at the back of your mind all evening.",
           accumulation: "You kept wondering whether your manager or the client would read the late document badly."
         }
@@ -1324,22 +1324,22 @@ const ENDINGS = {
   ],
   mental_health: [
     { id: "win",
-      condition: (m) => m.work_stress < 65 && m.partner_satisfaction >= 45,
+      condition: (m) => m.work_stress < 65 && m.family_conflict < 54,
       style: "ending-success", title: "You got promoted, and home held together",
       desc: "You got promoted. Work anxiety stayed manageable, and things at home did not tip into repeated arguments. You managed to protect the application without letting family life fall apart.",
       insight: "The pressure here is often about perceived visibility rather than confirmed punishment. That is why small work-home moments can carry so much weight." },
     { id: "fail_both",
-      condition: (m) => m.work_stress >= 65 && m.partner_satisfaction < 45,
+      condition: (m) => m.work_stress >= 65 && m.family_conflict >= 54,
       style: "ending-danger", title: "You did not get promoted, and things at home suffered too",
       desc: "You did not get promoted because both family conflict and work anxiety became too much. Arguments at home kept building, and the anxiety around work never really switched off. By the end of the week, home needed too much repair, and your anxiety about work left you burned out and unable to focus clearly. Your manager was not sure this was the right time to promote you.",
       insight: "When pressure at work and conflict at home build at the same time, each one makes the other harder to manage." },
     { id: "fail_relationship",
-      condition: (m) => m.work_stress < 65 && m.partner_satisfaction < 45,
+      condition: (m) => m.work_stress < 65 && m.family_conflict >= 54,
       style: "ending-warning", title: "You got promoted, but it cost you at home",
-      desc: "You got promoted, but family life took the hit. Too many promises were moved, cut short, or pushed behind work. By the end of the week, arguments at home were hard to avoid, even though the work side had gone your way.",
+      desc: "You got promoted, but family life took the hit. Too many promises were moved, cut short, or pushed behind work. By the end of the week, arguments at home were hard to avoid, and your partner had started to question how long the relationship could carry on like this, even though the work side had gone your way.",
       insight: "Relationship strain often builds through repeated small disappointments rather than one decisive argument." },
     { id: "fail_stress",
-      condition: (m) => m.work_stress >= 65 && m.partner_satisfaction >= 45,
+      condition: (m) => m.work_stress >= 65 && m.family_conflict < 54,
       style: "ending-warning", title: "You did not get promoted, but home held together",
       desc: "You did not get promoted. Even though family life held together, work anxiety kept building through the week. You kept worrying about visibility, commitment, and how your manager would read your choices, and by the end it was harder to focus clearly on your work.",
       insight: "Promotion pressure can become especially hard to switch off when the standard is felt rather than clearly stated." },
@@ -1778,7 +1778,7 @@ class Game {
     if (this.scenarioType === 'mental_health') {
       return avg([
         100 - (this.meters.work_stress ?? 50),
-        this.meters.partner_satisfaction ?? 50
+        100 - (this.meters.family_conflict ?? 50)
       ]);
     }
     if (this.scenarioType === 'domestic_labour') {
@@ -1817,7 +1817,7 @@ class Game {
         { label: "close to breaking", note: "Too much of the week is being decided by work pressure.", tone: "danger" },
         { label: "under strain", note: "Both work and home still feel costly to hold together.", tone: "warning" },
         { label: "still in play", note: "The week is not easy, but neither side has tipped too far yet.", tone: "steady" },
-        { label: "holding up", note: "The promotion pressure is real, but home is still standing up to it.", tone: "good" }
+        { label: "holding up", note: "The promotion pressure is real, but conflict at home is still being kept down.", tone: "good" }
       ],
       domestic_labour: [
         { label: "landing on her", note: "Home is still defaulting back onto her by the end of the day.", tone: "danger" },
@@ -1866,7 +1866,7 @@ class Game {
     if (this.scenarioType === 'mental_health') {
       const pressures = [
         { text: "Most under pressure: work is still sitting too close to the surface.", value: 100 - (this.meters.work_stress ?? 50) },
-        { text: "Most under pressure: home is starting to feel less steady.", value: this.meters.partner_satisfaction ?? 50 }
+        { text: "Most under pressure: conflict at home is starting to build.", value: 100 - (this.meters.family_conflict ?? 50) }
       ];
       return pressures.sort((a, b) => a.value - b.value)[0].text;
     }
@@ -2394,7 +2394,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
       },
       mental_health: {
         work_stress: "How much anxiety and worry you are carrying about work, visibility, and promotion by the end of each choice.",
-        partner_satisfaction: "How steady family life still feels by the end of each choice."
+        family_conflict: "How much tension and conflict has built up at home by the end of each choice."
       },
       domestic_labour: {
         his_perception: "How much you think you contributed this week.",
@@ -2434,7 +2434,7 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
     const interconnectionNote = def.id === 'mental_health' ? `
       <div style="background:#fff8e1;border-left:4px solid #DAA520;padding:12px 14px;border-radius:0 8px 8px 0;margin-bottom:16px;">
         <p style="font-size:12px;color:#856404;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;">⚡ What the bars mean here</p>
-        <p style="font-size:13px;color:#555;line-height:1.5;">Work anxiety reflects perceived risk at work, not confirmed punishment. Family relationship tracks whether home still feels steady, or whether work keeps taking the bigger share.</p>
+        <p style="font-size:13px;color:#555;line-height:1.5;">Work anxiety reflects perceived risk at work, not confirmed punishment. Family conflict tracks how much tension and disagreement have built up at home as work keeps taking the bigger share.</p>
       </div>` : '';
 
     const familyPlanningNote = def.id === 'family_planning' ? `
@@ -2649,8 +2649,8 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
         sceneText: "Your child is still upset about last night, and you said you would make it up by doing pickup and taking him to Lego. At 3:00pm, the promotion mock interview planned for tomorrow is suddenly moved to 3:30pm today.",
         context: "Your manager has already rearranged their schedule as a favour to fit in this mock interview. If you miss this slot, you do not know when they will be able to fit it in again.",
         choices: [
-          { id: "A", main: "Stay for the mock interview and ask your partner to do pickup.", effects: { work_stress: -10, partner_satisfaction: -12 }, signal: "You stayed for the mock interview and your partner had to do pickup again.", accumulation: "The mock interview was done and the good feedback made you feel more prepared, but your partner was annoyed that pickup fell on them again." },
-          { id: "B", main: "Leave for pickup and ask to reschedule.", effects: { work_stress: +10, partner_satisfaction: +6 }, signal: "You had a good time with your child at Lego, but you felt guilty because your manager had already adapted their schedule to make this mock interview happen today.", accumulation: "You kept thinking about the mock interview you had missed and whether your manager would be annoyed." }
+          { id: "A", main: "Stay for the mock interview and ask your partner to do pickup.", effects: { work_stress: -10, family_conflict: +12 }, signal: "You stayed for the mock interview and your partner had to do pickup again.", accumulation: "The mock interview was done and the good feedback made you feel more prepared, but your partner was annoyed that pickup fell on them again." },
+          { id: "B", main: "Leave for pickup and ask to reschedule.", effects: { work_stress: +10, family_conflict: -6 }, signal: "You had a good time with your child at Lego, but you felt guilty because your manager had already adapted their schedule to make this mock interview happen today.", accumulation: "You kept thinking about the mock interview you had missed and whether your manager would be annoyed." }
         ]
       };
     }
@@ -2661,8 +2661,8 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
         sceneText: "You sent the document late yesterday. Your client has not had time to read it properly and now wants you to present it at 3:30pm today. Your manager will also be there. Yet it is also your turn to do pickup, and your partner is at work.",
         context: "You cannot do both at the same time.",
         choices: [
-        { id: "A", main: "Stay for the presentation and ask your partner to cover pickup.", effects: { work_stress: -10, partner_satisfaction: -12 }, signal: "You stayed for the presentation and called your partner at the last minute to do pickup.", accumulation: "Your manager and client heard the explanation from you directly." },
-        { id: "B", main: "Ask to postpone the presentation because you have to do pickup today.", effects: { work_stress: +10, partner_satisfaction: +6 }, signal: "The presentation could not be postponed, so your manager stepped in for you. You left for pickup, but kept wondering whether you had made the right call.", accumulation: "Even after pickup, you kept thinking about the presentation your manager had to cover for you." }
+        { id: "A", main: "Stay for the presentation and ask your partner to cover pickup.", effects: { work_stress: -10, family_conflict: +12 }, signal: "You stayed for the presentation and called your partner at the last minute to do pickup.", accumulation: "Your manager and client heard the explanation from you directly." },
+        { id: "B", main: "Ask to postpone the presentation because you have to do pickup today.", effects: { work_stress: +10, family_conflict: -6 }, signal: "The presentation could not be postponed, so your manager stepped in for you. You left for pickup, but kept wondering whether you had made the right call.", accumulation: "Even after pickup, you kept thinking about the presentation your manager had to cover for you." }
       ]
     };
   }
@@ -2677,8 +2677,8 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
         sceneText: "Your partner is unhappy with you keeping work first all week and wants to have a chat before bed. You still have a follow-up note to finish for tomorrow that could matter for your promotion.",
         context: "You can finish the note now, or deal with home first.",
         choices: [
-          { id: "A", main: "Finish the note now.", effects: { work_stress: -10, partner_satisfaction: -12 }, signal: "You turned back to work. The note got done, but by the time you finished your partner had already fallen asleep and the conversation did not happen that night.", accumulation: "The note was finished, but your partner became less talkative." },
-          { id: "B", main: "Leave it until tomorrow and talk now.", effects: { work_stress: +10, partner_satisfaction: +6 }, signal: "You decided to do the note early the next morning and spent more time with your partner.", accumulation: "The conversation helped, but you now had to get up earlier and rush the note before work." }
+          { id: "A", main: "Finish the note now.", effects: { work_stress: -10, family_conflict: +12 }, signal: "You turned back to work. The note got done, but by the time you finished your partner had already fallen asleep and the conversation did not happen that night.", accumulation: "The note was finished, but your partner became less talkative." },
+          { id: "B", main: "Leave it until tomorrow and talk now.", effects: { work_stress: +10, family_conflict: -6 }, signal: "You decided to do the note early the next morning and spent more time with your partner.", accumulation: "The conversation helped, but you now had to get up earlier and rush the note before work." }
         ]
       };
     }
@@ -2690,8 +2690,8 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
         sceneText: "Your manager asks if you can come in to talk through your recent performance and your promotion application. But your child is at home today because nursery is closed, and this is one of your work-from-home days.",
         context: "If you go in, someone else has to cover the home side.",
         choices: [
-          { id: "A", main: "Go into the office.", effects: { work_stress: -10, partner_satisfaction: -12 }, signal: "You went in and got positive feedback from your manager. But you kept worrying about whether your child was doing okay at home.", accumulation: "For a while, you worried less about what your manager thought, but you kept checking your phone in case something had gone wrong at home." },
-          { id: "B", main: "Stay home and ask to do it online.", effects: { work_stress: +10, partner_satisfaction: +6 }, signal: "You stayed home, so the family side held. But you were left wondering how the request landed.", accumulation: "You kept wondering whether your manager thought you should have come in." }
+          { id: "A", main: "Go into the office.", effects: { work_stress: -10, family_conflict: +12 }, signal: "You went in and got positive feedback from your manager. But you kept worrying about whether your child was doing okay at home.", accumulation: "For a while, you worried less about what your manager thought, but you kept checking your phone in case something had gone wrong at home." },
+          { id: "B", main: "Stay home and ask to do it online.", effects: { work_stress: +10, family_conflict: -6 }, signal: "You stayed home, so the family side held. But you were left wondering how the request landed.", accumulation: "You kept wondering whether your manager thought you should have come in." }
         ]
       };
     }
@@ -2702,8 +2702,8 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
       sceneText: "Today is usually one of your work-from-home days. Your manager asks if you can come in this morning to go through your application for the senior project manager role. That would mean your partner has to adjust their schedule again to cover you.",
       context: "Either work changes, or home does.",
       choices: [
-        { id: "A", main: "Go into the office.", effects: { work_stress: -10, partner_satisfaction: -12 }, signal: "You went in, and you felt better prepared for the role. However, your partner had to ask for more last-minute leave to cover the shift in plan.", accumulation: "You left the meeting thinking your application had landed better, but your partner had lost more leave because of it." },
-        { id: "B", main: "Stay home and ask to do it online.", effects: { work_stress: +10, partner_satisfaction: +6 }, signal: "You stayed home as planned, but you felt guilty during the meeting with your manager and ended up working longer than usual.", accumulation: "You got through the meeting, but kept wondering whether meeting online rather than in person had made you look less committed." }
+        { id: "A", main: "Go into the office.", effects: { work_stress: -10, family_conflict: +12 }, signal: "You went in, and you felt better prepared for the role. However, your partner had to ask for more last-minute leave to cover the shift in plan.", accumulation: "You left the meeting thinking your application had landed better, but your partner had lost more leave because of it." },
+        { id: "B", main: "Stay home and ask to do it online.", effects: { work_stress: +10, family_conflict: -6 }, signal: "You stayed home as planned, but you felt guilty during the meeting with your manager and ended up working longer than usual.", accumulation: "You got through the meeting, but kept wondering whether meeting online rather than in person had made you look less committed." }
       ]
     };
   }
@@ -2721,8 +2721,8 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
         sceneText: "Your partner says they are tired of family life being rearranged around your work. You are about to explain and try to sort things out with them. Just then, comments from colleagues on your application for the senior project manager role land in your inbox. You need to work through them before Monday's panel discussion.",
         context: "",
         choices: [
-          { id: "A", main: "Check the message now.", effects: { work_stress: -10, partner_satisfaction: -12 }, signal: "You checked it straight away, and your partner took it as a sign of rejection.", accumulation: "You felt more confident about the application, but your partner stopped talking and the conversation was over." },
-          { id: "B", main: "Put the phone away and deal with this first.", effects: { work_stress: +10, partner_satisfaction: +6 }, signal: "You both properly talked about what had been happening recently. You felt relieved, but worried you would not have enough time to work through the comments before Monday's panel discussion.", accumulation: "The conversation helped, but you now had less time to revise the application before Monday." }
+          { id: "A", main: "Check the message now.", effects: { work_stress: -10, family_conflict: +12 }, signal: "You checked it straight away, and your partner took it as a sign of rejection.", accumulation: "You felt more confident about the application, but your partner stopped talking and the conversation was over." },
+          { id: "B", main: "Put the phone away and deal with this first.", effects: { work_stress: +10, family_conflict: -6 }, signal: "You both properly talked about what had been happening recently. You felt relieved, but worried you would not have enough time to work through the comments before Monday's panel discussion.", accumulation: "The conversation helped, but you now had less time to revise the application before Monday." }
         ]
       };
     }
@@ -2734,8 +2734,8 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
       sceneText: "Your manager says that, to tighten up the management of working hours, everyone now has to check in online before and after work, and that this will be used as a performance indicator. You also need to drop your partner off for a GP appointment at 8:00am tomorrow morning, which means you will be back at 9:20 at the latest — slightly later than your normal start time.",
       context: "You can try to sort out another plan now, or keep tomorrow morning as it is and accept the late check-in.",
       choices: [
-        { id: "A", main: "Discuss with your partner whether there is another way to sort tomorrow morning.", effects: { work_stress: -10, partner_satisfaction: -12 }, signal: "You raised it with your partner straight away. You checked in on time and stayed responsive, but your partner struggled to get a cab at rush hour.", accumulation: "You checked in on time, but your partner struggled to get a cab at rush hour." },
-        { id: "B", main: "Drop your partner off as planned.", effects: { work_stress: +10, partner_satisfaction: +6 }, signal: "You dropped your partner off as planned, but kept wondering how much it would matter to check in 20 minutes late.", accumulation: "You kept worrying for the rest of the day about whether that late check-in would be noticed." }
+        { id: "A", main: "Discuss with your partner whether there is another way to sort tomorrow morning.", effects: { work_stress: -10, family_conflict: +12 }, signal: "You raised it with your partner straight away. You checked in on time and stayed responsive, but your partner struggled to get a cab at rush hour.", accumulation: "You checked in on time, but your partner struggled to get a cab at rush hour." },
+        { id: "B", main: "Drop your partner off as planned.", effects: { work_stress: +10, family_conflict: -6 }, signal: "You dropped your partner off as planned, but kept wondering how much it would matter to check in 20 minutes late.", accumulation: "You kept worrying for the rest of the day about whether that late check-in would be noticed." }
       ]
     };
   }
@@ -2777,17 +2777,17 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
     // Mental-health sequence effects only nudge the route.
     // The main trade-off should still come from each choice itself.
     if (previousChoice === 'A' && choice.id === 'A') {
-      add('work_stress', 2);
-      add('partner_satisfaction', -2);
+      add('work_stress', 7);
+      add('family_conflict', 2);
     } else if (previousChoice === 'B' && choice.id === 'B') {
       add('work_stress', 2);
-      add('partner_satisfaction', -1);
+      add('family_conflict', 0);
     } else if (previousChoice === 'A' && choice.id === 'B') {
       add('work_stress', 1);
-      add('partner_satisfaction', 1);
+      add('family_conflict', -1);
     } else if (previousChoice === 'B' && choice.id === 'A') {
-      add('work_stress', 3);
-      add('partner_satisfaction', -2);
+      add('work_stress', 8);
+      add('family_conflict', 2);
     }
 
     return appliedEffects;
@@ -2844,7 +2844,7 @@ Scenario brief:
 
 Visible bars:
 - Work anxiety = pressure, anxiety, and worry about work, promotion, visibility, and how he is being judged.
-- Family relationship = how steady things feel at home, including conflict, disappointment, and whether quarrels at home are building.
+- Family conflict = how much tension, disappointment, and arguments are building at home.
 
 Structure:
 - Four decision points total.
@@ -4144,7 +4144,7 @@ Return ONLY valid JSON: {"scene":"..."}`;
     if (this.scenarioType === 'mental_health') {
       const scores = [
         { label: "work anxiety", value: 100 - (this.meters.work_stress ?? 50) },
-        { label: "whether home still felt steady", value: this.meters.partner_satisfaction ?? 50 }
+        { label: "how much conflict built up at home", value: 100 - (this.meters.family_conflict ?? 50) }
       ].sort((a, b) => a.value - b.value);
       const driver = scores[0].label;
       return {
