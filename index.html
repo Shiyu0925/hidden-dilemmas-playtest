@@ -2765,9 +2765,8 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
 
     const priorPattern = this.storyState?.choicePattern || [];
     const previousChoice = priorPattern[priorPattern.length - 1] || null;
-    if (!previousChoice || !['A', 'B'].includes(previousChoice)) {
-      return appliedEffects;
-    }
+    const priorWorkFirstCount = priorPattern.filter(c => c === 'A').length;
+    const priorFamilyFirstCount = priorPattern.filter(c => c === 'B').length;
 
     const add = (meter, delta) => {
       appliedEffects[meter] = (appliedEffects[meter] || 0) + delta;
@@ -2775,18 +2774,38 @@ Return ONLY valid JSON: {"title":"...","desc":"..."}`;
 
     // Mental-health sequence effects only nudge the route.
     // The main trade-off should still come from each choice itself.
-    if (previousChoice === 'A' && choice.id === 'A') {
-      add('work_stress', 7);
-      add('family_conflict', 2);
-    } else if (previousChoice === 'B' && choice.id === 'B') {
-      add('work_stress', 2);
-      add('family_conflict', 0);
-    } else if (previousChoice === 'A' && choice.id === 'B') {
-      add('work_stress', 1);
-      add('family_conflict', -1);
-    } else if (previousChoice === 'B' && choice.id === 'A') {
-      add('work_stress', 8);
-      add('family_conflict', 2);
+    if (previousChoice && ['A', 'B'].includes(previousChoice)) {
+      if (previousChoice === 'A' && choice.id === 'A') {
+        add('work_stress', 7);
+        add('family_conflict', 2);
+      } else if (previousChoice === 'B' && choice.id === 'B') {
+        add('work_stress', 2);
+        add('family_conflict', 0);
+      } else if (previousChoice === 'A' && choice.id === 'B') {
+        add('work_stress', 1);
+        add('family_conflict', -1);
+      } else if (previousChoice === 'B' && choice.id === 'A') {
+        add('work_stress', 8);
+        add('family_conflict', 2);
+      }
+    }
+
+    // Repeating the same side stops working as well over time.
+    // Too many work-first choices stop calming work and start looking unsustainable.
+    if (choice.id === 'A') {
+      if (priorWorkFirstCount === 1) {
+        add('work_stress', 2);
+      } else if (priorWorkFirstCount >= 2) {
+        add('work_stress', 5);
+      }
+    }
+
+    // Too many family-first choices stop easing home conflict as much,
+    // because unresolved work pressure starts spilling back into family life.
+    if (choice.id === 'B') {
+      if (priorFamilyFirstCount >= 2) {
+        add('family_conflict', 2);
+      }
     }
 
     return appliedEffects;
